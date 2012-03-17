@@ -25,24 +25,26 @@
 /*global jQuery, params */
 (function($) {
 	"use strict";
-	var $list = $('#demo1_output'),
+	var $output = $('#demo1_output'),
 		$toolbar = $('#demo1').toolbar({
 			iconSrcPrefix: 'images/',
+			labels: false,
 			definition: [
 				{
 					type: 'actions',
 					id: 'actionsDemo',
 					items: [
 						{
-							id: 'wrench',
+							id: 'spanner',
 							properties: {
 								icon: {
 									src: 'wrench.png',
-									alt: 'Wrench'
+									alt: 'Spanner'
 								},
-								text: 'Wrench',
+								text: 'Spanner',
+								tooltip: 'Use the spanner',
 								action: function() {
-									$list.append($('<li></li>').text('Wrench'));
+									$output.append($('<li></li>').text('Used the Spanner'));
 								}
 							}
 						},
@@ -54,12 +56,16 @@
 									alt: 'Dice'
 								},
 								text: 'Dice',
+								tooltip: 'Roll the dice',
 								action: function() {
-									$list.append($('<li></li>').text('Dice'));
+									$output.append($('<li></li>').text('Rolled the Dice'));
 								}
 							}
 						}
 					]
+				},
+				{
+					type: 'separator'
 				},
 				{
 					type: 'modal',
@@ -73,8 +79,9 @@
 									alt: 'Star'
 								},
 								text: 'Star',
+								tooltip: 'Toggle the Star mode',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Star (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text('Switched the Star ' + (targetState ? 'on' : 'off')));
 								}
 							}
 						}
@@ -93,8 +100,9 @@
 									alt: 'Hat'
 								},
 								text: 'Hat',
+								tooltip: 'Put the Hat on or take the Hat off',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Hat (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text(targetState ? 'Put the Hat on' : 'Took the Hat off'));
 								}
 							}
 						}
@@ -115,8 +123,9 @@
 									alt: 'Dog'
 								},
 								text: 'Dog',
+								tooltip: 'Select "Dog" for Animal',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Animal > Dog (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Dog" in the Animal group'));
 								}
 							}
 						},
@@ -128,8 +137,9 @@
 									alt: 'Cat'
 								},
 								text: 'Cat',
+								tooltip: 'Select "Cat" for Animal',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Animal > Cat (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Cat" in the Animal group'));
 								}
 							}
 						},
@@ -141,8 +151,9 @@
 									alt: 'Mouse'
 								},
 								text: 'Mouse',
+								tooltip: 'Select "Mouse" for Animal',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Animal > Mouse (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Mouse" in the Animal group'));
 								}
 							}
 						}
@@ -155,6 +166,9 @@
 					type: 'modal',
 					compact: true,
 					id: 'sport',
+					properties: {
+						tooltip: 'Display a list of sports'
+					},
 					items: [
 						{
 							id: 'basketball',
@@ -164,8 +178,9 @@
 									alt: 'Basketball'
 								},
 								text: 'Basketball',
+								tooltip: 'Set sport to "Basketball"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Basketball (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Basketball"'));
 								}
 							}
 						},
@@ -177,8 +192,9 @@
 									alt: 'Football'
 								},
 								text: 'Football',
+								tooltip: 'Set sport to "Football"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Football (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Football"'));
 								}
 							}
 						},
@@ -190,8 +206,9 @@
 									alt: 'Golf'
 								},
 								text: 'Golf',
+								tooltip: 'Set sport to "Golf"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Golf (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Golf"'));
 								}
 							}
 						},
@@ -204,8 +221,9 @@
 									alt: 'Pool'
 								},
 								text: 'Pool',
+								tooltip: 'Set sport to "Pool"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Pool (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Pool"'));
 								}
 							}
 						},
@@ -217,8 +235,9 @@
 									alt: 'Badminton'
 								},
 								text: 'Badminton',
+								tooltip: 'Set sport to "Badminton"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Badminton (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Badminton"'));
 								}
 							}
 						},
@@ -230,8 +249,9 @@
 									alt: 'Soccer'
 								},
 								text: 'Soccer',
+								tooltip: 'Set sport to "Soccer"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Soccer (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Soccer"'));
 								}
 							}
 						},
@@ -243,44 +263,23 @@
 									alt: 'Tennis'
 								},
 								text: 'Tennis',
+								tooltip: 'Set sport to "Tennis"',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Sport > Tennis (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Tennis"'));
 								}
 							}
 						}
 					]
 				}
 			]
-		}),
-		$additionalControls = $('#demo1_controls')
-			.append($('<li></li>').append($('<a></a>').attr({ href: '#' }).text('Labels On').click(function() {
-				$toolbar.toolbar('option', 'labels', true);
-			})))
-			.append($('<li></li>').append($('<a></a>').attr({ href: '#' }).text('Labels Off').click(function() {
-				$toolbar.toolbar('option', 'labels', false);
-			})));
-
-/*
-						$toolbar.toolbar('addGroup').toolbar('addItemToGroup', {
-							text: 'New Item with a Really Really Long Label',
-							icon: {
-								src: 'redo.png'
-							}
-						})
-
-						$toolbar.toolbar('addOptionToItem', {
-							id: 'addedOption',
-							selected: true,
-							action: function() {
-								$list.append($('<li></li>').text('chooseSomethingCompact.addedOption'));
-							},
-							icon: {
-								src: 'h4.png',
-								alt: 'addedOption'
-							},
-							text: 'Added Option'
-						}, 'secondGroup');
-*/
+		});
+	$('#demo1_controls')
+		.append($('<li></li>').append($('<a></a>').attr({ href: '#' }).text('Labels On').click(function() {
+			$toolbar.toolbar('option', 'labels', true);
+		})))
+		.append($('<li></li>').append($('<a></a>').attr({ href: '#' }).text('Labels Off').click(function() {
+			$toolbar.toolbar('option', 'labels', false);
+		})));
 }(jQuery));
 		//]]>
 		</script>

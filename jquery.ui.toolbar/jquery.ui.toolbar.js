@@ -348,7 +348,7 @@
 					}));
 			if (compact) {
 				$expander = $('<ul></ul>').addClass(o.cssClass.expander + ' ui-helper-reset ui-helper-clearfix');
-				$proxyButton = this._createItemButton(itemDefaults).addClass(o.cssClass.proxyButton).click(function() {
+				$proxyButton = this._createItemButton($.extend(true, {}, itemDefaults, { tooltip: properties.tooltip })).addClass(o.cssClass.proxyButton).click(function() {
 					$expander.slideToggle();
 				});
 				$('<li></li>')
@@ -706,13 +706,20 @@
 			var o = this.options,
 				maxButtonHeight = 0,
 				$buttons = $(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.item).not('.' + o.cssClass.itemExpanded).children('.' + o.cssClass.button);
+			// We need to remove any previously set fixed height to determine the correct largest element.
+			$buttons.css({
+				height: 'auto'
+			});
+			// Iterate through the elements and find the one with greatest natural height.
 			$.each($buttons, function(buttonIndex, button) {
 				var $button = $(button);
 				maxButtonHeight = Math.max(maxButtonHeight, $button.innerHeight() - parseInt($button.css('paddingTop'), 10) - parseInt($button.css('paddingBottom'), 10));
 			});
+			// Set all buttons to that height.
 			$buttons.css({
 				height: maxButtonHeight + 'px'
 			});
+			// Set all separators to that height.
 			$(this.element).find('.' + o.cssClass.separator).css({
 				height: maxButtonHeight + 'px'
 			});
