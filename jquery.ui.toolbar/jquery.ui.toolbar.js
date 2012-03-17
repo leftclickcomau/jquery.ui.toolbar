@@ -294,9 +294,7 @@
 		 * @return This object, for method chaining.
 		 */
 		selectItem: function(itemReference) {
-			var o = this.options,
-				$item = this.getItem(itemReference);
-			return this._selectItem($item);
+			return this._selectItem(this.getItem(itemReference));
 		},
 
 
