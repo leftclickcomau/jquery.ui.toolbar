@@ -18,9 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.ui-toolbar { width: 100%; }
-
-.ui-toolbar .ui-toolbar-separator { display: block; float: left; width: 4px; height: 100%; background-color: #aaa; margin: 0 4px; padding: 4px 0 8px 0; }
 
 .ui-toolbar ul.ui-toolbar-list { display: block; float: left; }
 
@@ -28,13 +25,16 @@
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button { display: block; float: left; padding: 4px 4px 8px 4px; line-height: 0; text-align: center; text-decoration: none; border: none; background: transparent; }
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button.ui-state-active { background: url(images/current.png) center bottom no-repeat; }
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button img.ui-toolbar-icon { width: 32px; height: 32px; margin: 4px 0; }
-.ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button .ui-toolbar-label { display: block; font-size: .625em; font-weight: normal; line-height: 1.1; overflow: hidden; }
+.ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button span.ui-toolbar-label { display: block; font-size: .625em; font-weight: normal; line-height: 1.1; overflow: hidden; }
 
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact a.ui-toolbar-button { background: url(images/compact.png) center bottom no-repeat; }
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact ul.ui-toolbar-list-expander { display: none; position: absolute; top: 100%; left: 0; margin-top: 1px; width: auto; /* TODO Remove this */ border: 1px solid #ccc; }
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact ul.ui-toolbar-list-expander li.ui-toolbar-item-expanded { display: block; width: 100%; }
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact ul.ui-toolbar-list-expander li.ui-toolbar-item-expanded a.ui-toolbar-button { display: block; width: 100%; border: none; white-space: nowrap; padding: 0; text-align: left; background: none; }
 .ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact ul.ui-toolbar-list-expander li.ui-toolbar-item-expanded a.ui-toolbar-button img.ui-toolbar-icon { display: inline-block; width: 32px; height: 32px; margin: 4px; vertical-align: middle; }
-.ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact ul.ui-toolbar-list-expander li.ui-toolbar-item-expanded a.ui-toolbar-button .ui-toolbar-label { display: inline-block; margin: 4px; font-size: smaller; font-weight: normal; }
+.ui-toolbar ul.ui-toolbar-list li.ui-toolbar-item.ui-toolbar-item-compact ul.ui-toolbar-list-expander li.ui-toolbar-item-expanded a.ui-toolbar-button span.ui-toolbar-label { display: inline-block; margin: 4px; font-size: smaller; font-weight: normal; }
 
 .ui-toolbar-labels ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button { width: 56px; }
+.ui-toolbar.ui-toolbar-no-labels ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button span.ui-toolbar-label { display: none; }
+
+.ui-toolbar .ui-toolbar-separator { display: block; float: left; width: 4px; height: 100%; background-color: #aaa; margin: 0 4px; padding: 4px 0 8px 0; }

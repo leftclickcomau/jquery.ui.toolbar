@@ -52,11 +52,6 @@
 			labels: true,
 
 			/**
-			 * Whether or not to display labels for item options.
-			 */
-			optionLabels: true,
-
-			/**
 			 * URL prefix for all icon images.  Useful if all icons are in the same directory.
 			 */
 			iconSrcPrefix: '',
@@ -64,7 +59,7 @@
 			/**
 			 * Default alt text for icon images.
 			 */
-			defaultIconAlt: '?',
+			defaultIconAlt: '',
 
 			/**
 			 * CSS class settings.  To apply additional classes per-item, use the cssClass key in the items entry.
@@ -121,6 +116,27 @@
 		 */
 		destroy: function() {
 			$(this.element).empty();
+		},
+
+		/**
+		 * Set option override.  Note that setting the iconSrcPrefix or the defaultIconAlt will only affect items
+		 * that have not yet been created.
+		 *
+		 * @param option
+		 * @param value
+		 */
+		_setOption: function(option, value) {
+			var o = this.options;
+			switch (option) {
+				case 'labels':
+					if (value) {
+						$(this.element).removeClass(o.cssClass.toolbarNoLabels).addClass(o.cssClass.toolbarLabels);
+					} else {
+						$(this.element).removeClass(o.cssClass.toolbarLabels).addClass(o.cssClass.toolbarNoLabels);
+					}
+					this._fixHeight();
+					break;
+			}
 		},
 
 
@@ -689,20 +705,15 @@
 		_fixHeight: function() {
 			var o = this.options,
 				maxButtonHeight = 0,
-				$buttons = $(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.item).not('.' + o.cssClass.itemExpanded).children('.' + o.cssClass.button),
-				$separators = $(this.element).find('.' + o.cssClass.separator);
+				$buttons = $(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.item).not('.' + o.cssClass.itemExpanded).children('.' + o.cssClass.button);
 			$.each($buttons, function(buttonIndex, button) {
 				var $button = $(button);
 				maxButtonHeight = Math.max(maxButtonHeight, $button.innerHeight() - parseInt($button.css('paddingTop'), 10) - parseInt($button.css('paddingBottom'), 10));
 			});
-			$.each($separators, function(separatorIndex, separator) {
-				var $separator = $(separator);
-				maxButtonHeight = Math.max(maxButtonHeight, $separator.innerHeight() - parseInt($separator.css('paddingTop'), 10) - parseInt($separator.css('paddingBottom'), 10));
-			});
 			$buttons.css({
 				height: maxButtonHeight + 'px'
 			});
-			$separators.css({
+			$(this.element).find('.' + o.cssClass.separator).css({
 				height: maxButtonHeight + 'px'
 			});
 			return this;
