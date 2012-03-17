@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Demonstration of jquery.ui.toolbar | Generic toolbar widget for jQuery UI</title>
+		<link href="../dependencies/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css" />
+		<link href="../jquery.ui.toolbar/jquery.ui.toolbar.css" rel="stylesheet" type="text/css" />
+		<style type="text/css">
+			h1, div, ul, li { font-family: sans-serif; }
+		</style>
+	</head>
+	<body>
+		<h1>Demonstration of jquery.ui.toolbar</h1>
+		<div id="demo1"></div>
+		<ul id="demo1_output"></ul>
+
+		<script src="../dependencies/jquery-1.6.4.js" type="text/javascript"></script>
+		<script src="../dependencies/jquery-ui-1.8.16.custom.js" type="text/javascript"></script>
+		<script src="../jquery.ui.toolbar/jquery.ui.toolbar.js" type="text/javascript"></script>
+		<script type="text/javascript">
+		//<![CDATA[
+/*jslint devel: true, bitwise: true, regexp: true, browser: true, unparam: true, evil: true, white: true, nomen: true, plusplus: true, maxerr: 50, indent: 4 */
+/*global jQuery, params */
+(function($) {
+	"use strict";
+	var $list = $('#demo1_output'),
+		$toolbar = $('#demo1').toolbar({
+			iconSrcPrefix: 'images/',
+			definition: [
+				{
+					type: 'actions',
+					id: 'actionsDemo',
+					items: [
+						{
+							id: 'wrench',
+							properties: {
+								icon: {
+									src: 'wrench.png',
+									alt: 'Wrench'
+								},
+								text: 'Wrench',
+								action: function() {
+									$list.append($('<li></li>').text('Wrench'));
+								}
+							}
+						},
+						{
+							id: 'dice',
+							properties: {
+								icon: {
+									src: 'dice.png',
+									alt: 'Dice'
+								},
+								text: 'Dice',
+								action: function() {
+									$list.append($('<li></li>').text('Dice'));
+								}
+							}
+						}
+					]
+				},
+				{
+					type: 'modal',
+					id: 'toggleDemo1',
+					items: [
+						{
+							id: 'star',
+							properties: {
+								icon: {
+									src: 'star.png',
+									alt: 'Star'
+								},
+								text: 'Star',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Star (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						}
+					]
+				},
+				{
+					type: 'modal',
+					id: 'toggleDemo2',
+					items: [
+						{
+							id: 'tux',
+							selected: true,
+							properties: {
+								icon: {
+									src: 'tux.png',
+									alt: 'Tux'
+								},
+								text: 'Tux',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Tux (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						}
+					]
+				},
+				{
+					type: 'separator'
+				},
+				{
+					type: 'modal',
+					id: 'animal',
+					items: [
+						{
+							id: 'dog',
+							properties: {
+								icon: {
+									src: 'dog.png',
+									alt: 'Dog'
+								},
+								text: 'Dog',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Animal > Dog (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'cat',
+							properties: {
+								icon: {
+									src: 'cat.png',
+									alt: 'Cat'
+								},
+								text: 'Cat',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Animal > Cat (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'mouse',
+							properties: {
+								icon: {
+									src: 'mouse.png',
+									alt: 'Mouse'
+								},
+								text: 'Mouse',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Animal > Mouse (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						}
+					]
+				},
+				{
+					type: 'separator'
+				},
+				{
+					type: 'modal',
+					compact: true,
+					id: 'sport',
+					items: [
+						{
+							id: 'basketball',
+							properties: {
+								icon: {
+									src: 'sport_basketball.png',
+									alt: 'Basketball'
+								},
+								text: 'Basketball',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Basketball (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'golf',
+							properties: {
+								icon: {
+									src: 'sport_golf.png',
+									alt: 'Golf'
+								},
+								text: 'Golf',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Golf (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'pool',
+							selected: true,
+							properties: {
+								icon: {
+									src: 'sport_8ball.png',
+									alt: 'Pool'
+								},
+								text: 'Pool',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Pool (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'shuttlecock',
+							properties: {
+								icon: {
+									src: 'sport_shuttlecock.png',
+									alt: 'Badminton'
+								},
+								text: 'Badminton',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Badminton (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'soccer',
+							properties: {
+								icon: {
+									src: 'sport_soccer.png',
+									alt: 'Soccer'
+								},
+								text: 'Soccer',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Soccer (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'tennis',
+							properties: {
+								icon: {
+									src: 'sport_tennis.png',
+									alt: 'Tennis'
+								},
+								text: 'Tennis',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Tennis (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						}
+					]
+				}
+			]
+		});
+/*
+						$toolbar.toolbar('addGroup').toolbar('addItemToGroup', {
+							text: 'New Item with a Really Really Long Label',
+							icon: {
+								src: 'redo.png'
+							}
+						})
+
+						$toolbar.toolbar('addOptionToItem', {
+							id: 'addedOption',
+							selected: true,
+							action: function() {
+								$list.append($('<li></li>').text('chooseSomethingCompact.addedOption'));
+							},
+							icon: {
+								src: 'h4.png',
+								alt: 'addedOption'
+							},
+							text: 'Added Option'
+						}, 'secondGroup');
+*/
+}(jQuery));
+		//]]>
+		</script>
+	</body>
+</html>
