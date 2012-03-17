@@ -82,16 +82,16 @@
 					id: 'toggleDemo2',
 					items: [
 						{
-							id: 'tux',
+							id: 'hat',
 							selected: true,
 							properties: {
 								icon: {
-									src: 'tux.png',
-									alt: 'Tux'
+									src: 'hat.png',
+									alt: 'Hat'
 								},
-								text: 'Tux',
+								text: 'Hat',
 								toggle: function(targetState) {
-									$list.append($('<li></li>').text('Tux (' + (targetState ? 'activating' : 'deactivating') + ')'));
+									$list.append($('<li></li>').text('Hat (' + (targetState ? 'activating' : 'deactivating') + ')'));
 								}
 							}
 						}
@@ -163,6 +163,19 @@
 								text: 'Basketball',
 								toggle: function(targetState) {
 									$list.append($('<li></li>').text('Sport > Basketball (' + (targetState ? 'activating' : 'deactivating') + ')'));
+								}
+							}
+						},
+						{
+							id: 'football',
+							properties: {
+								icon: {
+									src: 'sport_football.png',
+									alt: 'Football'
+								},
+								text: 'Football',
+								toggle: function(targetState) {
+									$list.append($('<li></li>').text('Sport > Football (' + (targetState ? 'activating' : 'deactivating') + ')'));
 								}
 							}
 						},
