@@ -313,6 +313,17 @@
 			return this._selectItem(this.getItem(itemReference));
 		},
 
+		/**
+		 * Hide all expanders.
+		 *
+		 * @return This object, for method chaining.
+		 */
+		hideAllExpanders: function() {
+			var o = this.options;
+			$(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.itemCompact).find('.' + o.cssClass.expander).hide();
+			return this;
+		},
+
 
 		/**
 		 * Generate a unique ID using the given prefix.
@@ -347,7 +358,7 @@
 						compact: compact
 					}));
 			if (compact) {
-				$expander = $('<ul></ul>').addClass(o.cssClass.expander + ' ui-helper-reset ui-helper-clearfix');
+				$expander = $('<ul></ul>').addClass(o.cssClass.expander + ' ui-widget-content ui-helper-reset ui-helper-clearfix');
 				$proxyButton = this._createItemButton($.extend(true, {}, itemDefaults, { tooltip: properties.tooltip })).addClass(o.cssClass.proxyButton).click(function() {
 					$expander.slideToggle();
 				});
@@ -562,7 +573,7 @@
 				$group = $item.parents('.' + o.cssClass.list),
 				groupProperties = $group.data('toolbar.group'),
 				$button = $item.children('.' + o.cssClass.button);
-			$(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.itemCompact).not($item).find('.' + o.cssClass.expander).hide();
+			this.hideAllExpanders();
 			switch (groupProperties.type) {
 				case 'actions':
 					if ($.isFunction(properties.action)) {

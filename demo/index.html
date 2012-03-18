@@ -58,7 +58,7 @@
 								text: 'Dice',
 								tooltip: 'Roll the dice',
 								action: function() {
-									$output.append($('<li></li>').text('Rolled the Dice'));
+									$output.append($('<li></li>').text('Rolled the Dice, got a ' + (Math.floor(Math.random() * 6 + 1))));
 								}
 							}
 						}
