@@ -112,6 +112,10 @@
 		 * Widget destructor.
 		 */
 		destroy: function() {
+			var self = this;
+			this.getAllContainers().each(function(i, container) {
+				self.removeContainer($(container));
+			});
 			$(this.element).empty();
 			$.Widget.prototype.destroy.call(this);
 		},
@@ -198,7 +202,11 @@
 		 */
 		removeContainer: function(containerReference) {
 //			console.log('jquery.ui.toolbar.removeContainer()', containerReference);
-			this.getContainer(containerReference).remove();
+			var self = this, $container = this.getContainer(containerReference);
+			this.getItemsInContainer($container).each(function(i, item) {
+				self.removeItem($(item));
+			});
+			$container.remove();
 			return this._fixHeight();
 		},
 
@@ -211,9 +219,84 @@
 		 * @return Container jQuery object as identified by the reference, or null if there is no such container.
 		 */
 		getContainer: function(containerReference) {
-			return $(this.element).children('.' + this.options.cssClass.list).eq(this._getContainerIndex(containerReference));
+			console.log('getContainer()', containerReference);
+			var result = null,
+				$containers = this.getAllContainers();
+			console.log('all containers: ', $containers);
+			containerReference = containerReference || '_last';
+			if (typeof containerReference === 'number') {
+				result = $containers.eq(containerReference);
+			} else if (typeof containerReference === 'string') {
+				switch (containerReference) {
+					case '_first':
+						result = $containers.first();
+						break;
+					case '_last':
+						result = $containers.last();
+						break;
+					default:
+						$containers.each(function(containerIndex, container) {
+							var $container = $(container);
+							if (result === null && $container.data('toolbar.container').id === containerReference) {
+								result = $container;
+							}
+						});
+				}
+			} else if ($containers.index(containerReference) >= 0) {
+				result = containerReference;
+			}
+			console.log('result = ', result);
+			return result;
 		},
 
+		/**
+		 * Get all containers.
+		 *
+		 * @return jQuery object containing all containers in this toolbar.
+		 */
+		getAllContainers: function() {
+			return $(this.element).children('.' + this.options.cssClass.list);
+		},
+
+		/**
+		 * Get the number of containers.
+		 *
+		 * @return Number of containers in this toolbar.
+		 */
+		getContainersCount: function() {
+			return $(this.element).children('.' + this.options.cssClass.list).length;
+		},
+
+		/**
+		 * Get all items and separators in the given container.
+		 *
+		 * @param containerReference Container reference identifying which container to add the item to.  May be a
+		 *   container jQuery object, the id, the special strings "_first" or "_last", or a numeric index.  If omitted,
+		 *   the item will be added to the last existing container.
+		 *
+		 * @return jQuery object containing all items and separators in the given container.  This does not include
+		 *   proxy items.
+		 */
+		getItemsInContainer: function(containerReference) {
+			var $container = this.getContainer(containerReference),
+				itemClass = this._getContainerItemClass($container);
+			return $container.find('.' + itemClass);
+		},
+
+		/**
+		 * Get the number of items and separators in the given container.
+		 *
+		 * @param containerReference Container reference identifying which container to add the item to.  May be a
+		 *   container jQuery object, the id, the special strings "_first" or "_last", or a numeric index.  If omitted,
+		 *   the item will be added to the last existing container.
+		 *
+		 * @return Number of items and separators in the given container.  This does not include proxy items.
+		 */
+		getItemCountInContainer: function(containerReference) {
+			var $container = this.getContainer(containerReference),
+				itemClass = this._getContainerItemClass($container);
+			return $container.find('.' + itemClass).length;
+		},
 
 		/**
 		 * Add an item.
@@ -240,7 +323,7 @@
 			id = id || this._generateUniqueId('item');
 			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
 			position = position === null ? '_last' : position;
-			$item = this._createItem(id, properties, containerProperties.compact ? o.cssClass.itemExpanded : o.cssClass.itemStandard);
+			$item = this._createItem(id, properties, this._getContainerItemClass($container));
 			this._addItem($item, $container, position, relativeTo);
 			if (!dontSelect && containerProperties.type === 'group' && $container.children('.' + o.cssClass.item).length === 1) {
 				this.selectItem($item);
@@ -294,10 +377,32 @@
 		 *
 		 * @return Item jQuery object as identified by the reference, or null if no such item exists.
 		 */
-		getItem: function(itemReference) {
-			var o = this.options,
-				$container = this.getItemContainer(itemReference);
-			return $container.find('.' + o.cssClass.item).not('.' + o.cssClass.itemCompact).eq(this._getItemIndex(itemReference, $container));
+		getItem: function(itemReference, $container) {
+			var result = null,
+				$items = this.getItemsInContainer($container || this.getItemContainer(itemReference));
+			itemReference = itemReference || '_last';
+			if (typeof itemReference === 'number') {
+				result = $items.eq(itemReference);
+			} else if (typeof itemReference === 'string') {
+				switch (itemReference) {
+					case '_first':
+						result = $items.first();
+						break;
+					case '_last':
+						result = $items.last();
+						break;
+					default:
+						$items.each(function(itemIndex, item) {
+							var $item = $(item);
+							if (result ===  null && $item.data('toolbar.item').id === itemReference) {
+								result = $item;
+							}
+						});
+				}
+			} else if ($items.index(itemReference) >= 0) {
+				result = itemReference;
+			}
+			return result;
 		},
 
 		/**
@@ -309,18 +414,20 @@
 		 * @return Container jQuery object as identified by the reference, or null if there is no such container.
 		 */
 		getItemContainer: function(itemReference) {
-			var o = this.options, result = null, $container, itemClass;
-			$(this.element).children('.' + o.cssClass.list).each(function(containerIndex, container) {
+			var self = this, result = null;
+			this.getAllContainers().each(function(containerIndex, container) {
 				if (result === null) {
-					$container = $(container);
-					itemClass = $container.data('toolbar.container').compact ? 'itemExpanded' : 'itemStandard';
-					$container.find('.' + o.cssClass[itemClass]).each(function(itemIndex, item) {
-						if (typeof itemReference === 'string') {
-							if (result === null && $(item).data('toolbar.item').id === itemReference) {
+					var $container = $(container);
+					self.getItemsInContainer($container).each(function(itemIndex, item) {
+						if (result === null) {
+							var $item = $(item);
+							if (typeof itemReference === 'string') {
+								if (result === null && $item.data('toolbar.item').id === itemReference) {
+									result = $container;
+								}
+							} else if ($item.is(itemReference)) {
 								result = $container;
 							}
-						} else if ($(item).is(itemReference)) {
-							result = $container;
 						}
 					});
 				}
@@ -349,7 +456,7 @@
 		 */
 		hideAllExpanders: function() {
 			var o = this.options;
-			$(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.itemCompact).find('.' + o.cssClass.expander).hide();
+			this.getAllContainers().children('.' + o.cssClass.itemCompact).find('.' + o.cssClass.expander).hide();
 			return this;
 		},
 
@@ -411,7 +518,6 @@
 		 * @return This object for method chaining.
 		 */
 		_addContainer: function($container, position, relativeTo) {
-			var o = this.options;
 			switch (position) {
 				case '_first':
 					$(this.element).prepend($container);
@@ -422,10 +528,10 @@
 					$(this.element).append($container);
 					break;
 				case '_before':
-					$(this.element).children('.' + o.cssClass.list).eq(this._getContainerIndex(relativeTo)).before($container);
+					this.getContainer(relativeTo).before($container);
 					break;
 				case '_after':
-					$(this.element).children('.' + o.cssClass.list).eq(this._getContainerIndex(relativeTo)).after($container);
+					this.getContainer(relativeTo).after($container);
 					break;
 				default:
 					throw 'Error: Unknown position "' + position + '" in _addContainer()';
@@ -443,10 +549,8 @@
 		 * @return jQuery object.
 		 */
 		_createItem: function(id, properties, cssClass) {
-			var self = this, o = this.options, $button;
-
-			// Create the element structure.
-			$button = this._createItemButton(properties).click(function(evt) {
+			var self = this,
+				$button = this._createItemButton(properties).click(function(evt) {
 				setTimeout(function() {
 					$button.blur();
 				}, 0);
@@ -455,7 +559,6 @@
 					return false;
 				}
 			});
-
 			return $('<li></li>')
 				.addClass(this.options.cssClass.item)
 				.addClass(cssClass)
@@ -565,9 +668,7 @@
 		 * @return This object for method chaining.
 		 */
 		_addItem: function($item, $container, position, relativeTo) {
-			var o = this.options,
-				$target = $container.data('toolbar.container').compact ? $container.find('.' + o.cssClass.expander) : $container,
-				itemClass = $container.compact ? 'itemExpanded' : 'itemStandard';
+			var $target = this._getContainerTarget($container);
 			switch (position) {
 				case '_first':
 					$target.prepend($item);
@@ -578,10 +679,10 @@
 					$target.append($item);
 					break;
 				case '_before':
-					$target.children('.' + o.cssClass[itemClass]).eq(this._getItemIndex(relativeTo, $container)).before($target);
+					this.getItem(relativeTo, $container).before($target);
 					break;
 				case '_after':
-					$target.children('.' + o.cssClass[itemClass]).eq(this._getItemIndex(relativeTo, $container)).after($target);
+					this.getItem(relativeTo, $container).after($target);
 					break;
 				default:
 					throw 'Error: Unknown position "' + position + '" in _addItem()';
@@ -647,76 +748,16 @@
 		},
 
 
-		/**
-		 * Get the internal container index for the given reference.
-		 *
-		 * @param containerReference Container reference identifying which container to retrieve the index for.
-		 *
-		 * @return Container index.
-		 */
-		_getContainerIndex: function(containerReference) {
-			var o = this.options, result = null;
-			containerReference = containerReference || '_last';
-			if (typeof containerReference === 'number') {
-				result = containerReference;
-			} else if (typeof containerReference === 'string') {
-				switch (containerReference) {
-					case '_first':
-						result = 0;
-						break;
-					case '_last':
-						result = $(this.element).children('.' + o.cssClass.list).length - 1;
-						break;
-					default:
-						$(this.element).children('.' + o.cssClass.list).each(function(containerIndex, container) {
-							if (result === null && $(container).data('toolbar.container').id === containerReference) {
-								result = containerIndex;
-							}
-						});
-				}
-			} else {
-				result = $(this.element).index(containerReference);
-			}
-			return result;
+		_getContainerItemClass: function(containerReference) {
+			var key = this.getContainer(containerReference).data('toolbar.container').compact ? 'itemExpanded' : 'itemStandard';
+			return this.options.cssClass[key];
 		},
 
-		/**
-		 * Get the internal internal index for the given reference.
-		 *
-		 * @param itemReference Item reference identifying which item to retrieve the index for.
-		 * @param $container Container to look in.
-		 *
-		 * @return Item index.
-		 */
-		_getItemIndex: function(itemReference, $container) {
-			var o = this.options, result = null, index, itemClass;
-			itemReference = itemReference || '_last';
-			$container = $container || this.getItemContainer(itemReference);
-			itemClass = $container.data('toolbar.container').compact ? 'itemExpanded' : 'itemStandard';
-			if (itemReference === null) {
-				result = 0;
-			} else if (typeof itemReference === 'number') {
-				result = itemReference;
-			} else if (typeof itemReference === 'string') {
-				switch (itemReference) {
-					case '_first':
-						result = 0;
-						break;
-					case '_last':
-						result = $container.find('.' + o.cssClass[itemClass]).length - 1;
-						break;
-					default:
-						$container.find('.' + o.cssClass[itemClass]).each(function(itemIndex, item) {
-							if (result ===  null && $(item).data('toolbar.item').id === itemReference) {
-								result = itemIndex;
-							}
-						});
-				}
-			} else {
-				result = $container.find('.' + o.cssClass[itemClass]).index(itemReference);
-			}
-			return result;
+		_getContainerTarget: function(containerReference) {
+			var $container = this.getContainer(containerReference);
+			return $container.data('toolbar.container').compact ? $container.find('.' + this.options.cssClass.expander) : $container;
 		},
+
 
 		/**
 		 * Fix the heights of the buttons and separators at the top level, so that they are all equal height
@@ -725,7 +766,7 @@
 		_fixHeight: function() {
 			var o = this.options,
 				maxButtonHeight = 0,
-				$buttons = $(this.element).children('.' + o.cssClass.list).children('.' + o.cssClass.item).not('.' + o.cssClass.itemExpanded).children('.' + o.cssClass.button);
+				$buttons = this.getAllContainers().children('.' + o.cssClass.item).not('.' + o.cssClass.itemExpanded).children('.' + o.cssClass.button);
 			// We need to remove any previously set fixed height to determine the correct largest element.
 			$buttons.css({
 				height: 'auto'
