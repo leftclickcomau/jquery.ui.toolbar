@@ -15,4 +15,5 @@ h2 { font-size: 1em; margin: 0; }
 .controls p { margin: 4px 8px; }
 .controls h2 { margin: 4px 8px; }
 .controls ul li a { display: block; margin: 4px 8px; }
+#leftclick { text-align: right; }
 .note { font-size: small; font-style: italic; color: #666; }
