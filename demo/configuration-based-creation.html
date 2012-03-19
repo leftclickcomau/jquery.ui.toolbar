@@ -52,230 +52,232 @@
 		$toolbar = $('#demo-toolbar').toolbar({
 			iconSrcPrefix: 'images/',
 			labels: false,
-			definition: [
+			items: [
 				{
-					type: 'sequence',
-					id: 'things',
-					items: [
-
-						{
-							id: 'spanner',
-							properties: {
-								icon: {
-									src: 'wrench.png',
-									alt: 'Spanner'
-								},
-								text: 'Spanner',
-								tooltip: 'Use the spanner',
-								action: function() {
-									$output.append($('<li></li>').text('Used the Spanner'));
-								}
-							}
+					id: 'spanner',
+					properties: {
+						icon: {
+							src: 'wrench.png',
+							alt: 'Spanner'
 						},
-						{
-							id: 'dice',
-							properties: {
-								icon: {
-									src: 'dice.png',
-									alt: 'Dice'
-								},
-								text: 'Dice',
-								tooltip: 'Roll the dice',
-								action: function() {
-									$output.append($('<li></li>').text('Rolled the Dice, got a ' + (Math.floor(Math.random() * 6 + 1))));
-								}
-							}
-						},
-						'separator',
-						{
-							id: 'star',
-							properties: {
-								icon: {
-									src: 'star.png',
-									alt: 'Star'
-								},
-								text: 'Star',
-								tooltip: 'Toggle the Star mode',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text('Switched the Star ' + (targetState ? 'on' : 'off')));
-								}
-							}
-						},
-						{
-							id: 'hat',
-							selected: true,
-							properties: {
-								icon: {
-									src: 'hat.png',
-									alt: 'Hat'
-								},
-								text: 'Hat',
-								tooltip: 'Put the Hat on or take the Hat off',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text(targetState ? 'Put the Hat on' : 'Took the Hat off'));
-								}
-							}
-						},
-						'separator'
-					]
+						text: 'Spanner',
+						tooltip: 'Use the spanner',
+						action: function() {
+							$output.append($('<li></li>').text('Used the Spanner'));
+						}
+					}
 				},
 				{
-					type: 'group',
-					id: 'animal',
-					items: [
-						{
-							id: 'dog',
-							properties: {
-								icon: {
-									src: 'dog.png',
-									alt: 'Dog'
-								},
-								text: 'Dog',
-								tooltip: 'Select "Dog" for Animal',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Dog" in the Animal group'));
-								}
-							}
+					id: 'dice',
+					properties: {
+						icon: {
+							src: 'dice.png',
+							alt: 'Dice'
 						},
-						{
-							id: 'cat',
-							properties: {
-								icon: {
-									src: 'cat.png',
-									alt: 'Cat'
-								},
-								text: 'Cat',
-								tooltip: 'Select "Cat" for Animal',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Cat" in the Animal group'));
-								}
-							}
+						text: 'Dice',
+						tooltip: 'Roll the dice',
+						action: function() {
+							$output.append($('<li></li>').text('Rolled the Dice, got a ' + (Math.floor(Math.random() * 6 + 1))));
+						}
+					}
+				},
+				'separator',
+				{
+					id: 'star',
+					properties: {
+						icon: {
+							src: 'star.png',
+							alt: 'Star'
 						},
-						{
-							id: 'mouse',
-							properties: {
-								icon: {
-									src: 'mouse.png',
-									alt: 'Mouse'
-								},
-								text: 'Mouse',
-								tooltip: 'Select "Mouse" for Animal',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Mouse" in the Animal group'));
-								}
-							}
-						},
-						'separator'
-					]
+						text: 'Star',
+						tooltip: 'Toggle the Star mode',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text('Switched the Star ' + (targetState ? 'on' : 'off')));
+						}
+					}
 				},
 				{
-					type: 'group',
-					compact: true,
-					id: 'sport',
+					id: 'hat',
+					selected: true,
+					properties: {
+						icon: {
+							src: 'hat.png',
+							alt: 'Hat'
+						},
+						text: 'Hat',
+						tooltip: 'Put the Hat on or take the Hat off',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text(targetState ? 'Put the Hat on' : 'Took the Hat off'));
+						}
+					}
+				},
+				'separator',
+				{
+					id: 'dog',
+					group: 'animal',
+					properties: {
+						icon: {
+							src: 'dog.png',
+							alt: 'Dog'
+						},
+						text: 'Dog',
+						tooltip: 'Select "Dog" for Animal',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Dog" in the Animal group'));
+						}
+					}
+				},
+				{
+					id: 'cat',
+					group: 'animal',
+					properties: {
+						icon: {
+							src: 'cat.png',
+							alt: 'Cat'
+						},
+						text: 'Cat',
+						tooltip: 'Select "Cat" for Animal',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Cat" in the Animal group'));
+						}
+					}
+				},
+				{
+					id: 'mouse',
+					group: 'animal',
+					properties: {
+						icon: {
+							src: 'mouse.png',
+							alt: 'Mouse'
+						},
+						text: 'Mouse',
+						tooltip: 'Select "Mouse" for Animal',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Mouse" in the Animal group'));
+						}
+					}
+				},
+				'separator',
+				{
+					id: 'sport-proxy',
+					group: 'sport',
+					type: 'expander-proxy',
 					properties: {
 						tooltip: 'Display a list of sports'
-					},
-					items: [
-						{
-							id: 'basketball',
-							properties: {
-								icon: {
-									src: 'sport_basketball.png',
-									alt: 'Basketball'
-								},
-								text: 'Basketball',
-								tooltip: 'Set sport to "Basketball"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Basketball"'));
-								}
-							}
+					}
+				},
+				{
+					id: 'basketball',
+					group: 'sport',
+					type: 'expander-button',
+					properties: {
+						icon: {
+							src: 'sport_basketball.png',
+							alt: 'Basketball'
 						},
-						{
-							id: 'football',
-							properties: {
-								icon: {
-									src: 'sport_football.png',
-									alt: 'Football'
-								},
-								text: 'Football',
-								tooltip: 'Set sport to "Football"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Football"'));
-								}
-							}
-						},
-						{
-							id: 'golf',
-							properties: {
-								icon: {
-									src: 'sport_golf.png',
-									alt: 'Golf'
-								},
-								text: 'Golf',
-								tooltip: 'Set sport to "Golf"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Golf"'));
-								}
-							}
-						},
-						{
-							id: 'pool',
-							selected: true,
-							properties: {
-								icon: {
-									src: 'sport_8ball.png',
-									alt: 'Pool'
-								},
-								text: 'Pool',
-								tooltip: 'Set sport to "Pool"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Pool"'));
-								}
-							}
-						},
-						{
-							id: 'shuttlecock',
-							properties: {
-								icon: {
-									src: 'sport_shuttlecock.png',
-									alt: 'Badminton'
-								},
-								text: 'Badminton',
-								tooltip: 'Set sport to "Badminton"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Badminton"'));
-								}
-							}
-						},
-						{
-							id: 'soccer',
-							properties: {
-								icon: {
-									src: 'sport_soccer.png',
-									alt: 'Soccer'
-								},
-								text: 'Soccer',
-								tooltip: 'Set sport to "Soccer"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Soccer"'));
-								}
-							}
-						},
-						{
-							id: 'tennis',
-							properties: {
-								icon: {
-									src: 'sport_tennis.png',
-									alt: 'Tennis'
-								},
-								text: 'Tennis',
-								tooltip: 'Set sport to "Tennis"',
-								toggle: function(targetState) {
-									$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Tennis"'));
-								}
-							}
+						text: 'Basketball',
+						tooltip: 'Set sport to "Basketball"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Basketball"'));
 						}
-					]
+					}
+				},
+				{
+					id: 'football',
+					group: 'sport',
+					type: 'expander-button',
+					properties: {
+						icon: {
+							src: 'sport_football.png',
+							alt: 'Football'
+						},
+						text: 'Football',
+						tooltip: 'Set sport to "Football"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Football"'));
+						}
+					}
+				},
+				{
+					id: 'golf',
+					group: 'sport',
+					type: 'expander-button',
+					properties: {
+						icon: {
+							src: 'sport_golf.png',
+							alt: 'Golf'
+						},
+						text: 'Golf',
+						tooltip: 'Set sport to "Golf"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Golf"'));
+						}
+					}
+				},
+				{
+					id: 'pool',
+					group: 'sport',
+					type: 'expander-button',
+					selected: true,
+					properties: {
+						icon: {
+							src: 'sport_8ball.png',
+							alt: 'Pool'
+						},
+						text: 'Pool',
+						tooltip: 'Set sport to "Pool"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Pool"'));
+						}
+					}
+				},
+				{
+					id: 'shuttlecock',
+					group: 'sport',
+					type: 'expander-button',
+					properties: {
+						icon: {
+							src: 'sport_shuttlecock.png',
+							alt: 'Badminton'
+						},
+						text: 'Badminton',
+						tooltip: 'Set sport to "Badminton"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Badminton"'));
+						}
+					}
+				},
+				{
+					id: 'soccer',
+					group: 'sport',
+					type: 'expander-button',
+					properties: {
+						icon: {
+							src: 'sport_soccer.png',
+							alt: 'Soccer'
+						},
+						text: 'Soccer',
+						tooltip: 'Set sport to "Soccer"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Soccer"'));
+						}
+					}
+				},
+				{
+					id: 'tennis',
+					group: 'sport',
+					type: 'expander-button',
+					properties: {
+						icon: {
+							src: 'sport_tennis.png',
+							alt: 'Tennis'
+						},
+						text: 'Tennis',
+						tooltip: 'Set sport to "Tennis"',
+						toggle: function(targetState) {
+							$output.append($('<li></li>').text((targetState ? 'Sport is now set to ' : 'Sport is no longer set to ') + '"Tennis"'));
+						}
+					}
 				}
 			]
 		});

@@ -38,13 +38,11 @@
 		options: {
 
 			/**
-			 * Toolbar definition.  This is one method of adding items to the toolbar widget.  The other two ways are
-			 * programmatically calling the addContainer() and addItem() methods, and by providing relevant markup in
-			 * the element used for the widget (i.e. progressive enhancement).
-			 *
-			 * TODO Support progressive enhancement.
+			 * Sequential array of toolbar item definition objects.  This is one method of adding items to the toolbar
+			 * widget.  The other two ways are programmatically calling the addItem() and addSeparator() methods, and
+			 * by providing relevant markup in the element used for the widget (i.e. progressive enhancement).
 			 */
-			definition: [],
+			items: [],
 
 			/**
 			 * Whether or not to display labels at the top-level.
@@ -68,18 +66,17 @@
 				toolbar: 'ui-toolbar',
 				toolbarLabels: 'ui-toolbar-labels',
 				toolbarNoLabels: 'ui-toolbar-no-labels',
-				list: 'ui-toolbar-list',
+
 				item: 'ui-toolbar-item',
-				button: 'ui-toolbar-button',
+				itemButton: 'ui-toolbar-item-button',
+				itemExpanderProxy: 'ui-toolbar-item-expander-proxy',
+				itemExpanderButton: 'ui-toolbar-item-expander-button',
+				itemSeparator: 'ui-toolbar-item-separator',
+				active: 'ui-state-active',
+
 				icon: 'ui-toolbar-icon',
 				label: 'ui-toolbar-label',
-				itemStandard: 'ui-toolbar-item-standard',
-				itemCompact: 'ui-toolbar-item-compact',
-				itemExpanded: 'ui-toolbar-item-expanded',
-				proxyButton: 'ui-toolbar-compact-proxy-button',
-				expander: 'ui-toolbar-list-expander',
-				separator: 'ui-toolbar-separator',
-				active: 'ui-state-active'
+				expander: 'ui-toolbar-expander-list'
 			},
 
 			/**
@@ -87,34 +84,71 @@
 			 * per-item attributes use the attributes key in the items entry.
 			 */
 			attributes: {
+				item: {},
 				icon: {},
-				button: {},
 				label: {}
 			}
 		},
 
 		/**
 		 * Widget constructor.
+		 *
+		 * TODO Progressive enhancement
 		 */
 		_create: function() {
+//			console.log('jquery.ui.toolbar', '_create()');
 			var self = this, o = this.options;
 			$.Widget.prototype._create.call(this);
-			$(this.element).addClass(o.cssClass.toolbar).addClass(o.labels ? o.cssClass.toolbarLabels : o.cssClass.toolbarNoLabels).addClass('ui-widget-content ui-helper-reset ui-helper-clearfix');
-			if ($.isArray(o.definition) && o.definition.length > 0) {
-				$.each(o.definition, function(containerIndex, container) {
-					container.properties = container.properties || {};
-					self.addContainer(container.id, container.type, container.compact, container.properties, container.items, '_last', null);
+			this.toolbarInitialised = false;
+			this.expandersMap = {};
+			$(this.element)
+				.addClass(o.cssClass.toolbar)
+				.addClass(o.labels ? o.cssClass.toolbarLabels : o.cssClass.toolbarNoLabels)
+				.addClass('ui-widget-content ui-helper-reset ui-helper-clearfix');
+			if ($.isArray(o.items) && o.items.length > 0) {
+				$.each(o.items, function(itemIndex, item) {
+					if (!$.isPlainObject(item)) {
+						item = {
+							type: item
+						};
+					}
+					item.properties = item.properties || {};
+					switch (item.type || 'button') {
+						case 'button':
+							self.addButtonItem(item.id, item.group, item.properties, '_last', null, item.selected);
+							break;
+						case 'separator':
+							self.addSeparatorItem(item.id, '_last', null);
+							break;
+						case 'expander-proxy':
+							self.addExpanderProxyItem(item.id, item.group, item.properties, '_last', null);
+							break;
+						case 'expander-button':
+							self.addExpanderButtonItem(item.id, item.group, item.properties, '_last', null, item.selected);
+							break;
+						default:
+							throw 'Error: Unknown item type "' + (typeof item) + '" in toolbar constructor';
+					}
+				});
+				$.each(o.items, function(itemIndex, item) {
+					var $items = self.getItemsInGroup(item.group);
+					if ($items.filter('.' + o.cssClass.active).length === 0) {
+						self.selectItem($items.eq(0));
+					}
 				});
 			}
+			this.toolbarInitialised = true;
+			this._fixHeight();
 		},
 
 		/**
 		 * Widget destructor.
 		 */
 		destroy: function() {
+//			console.log('jquery.ui.toolbar', 'destroy()');
 			var self = this;
-			this.getAllContainers().each(function(i, container) {
-				self.removeContainer($(container));
+			this.getAllItems().each(function(i, item) {
+				self.removeItem($(item));
 			});
 			$(this.element).empty();
 			$.Widget.prototype.destroy.call(this);
@@ -128,6 +162,7 @@
 		 * @param value
 		 */
 		_setOption: function(option, value) {
+//			console.log('jquery.ui.toolbar', '_setOption', option, value);
 			var o = this.options;
 			switch (option) {
 				case 'labels':
@@ -144,164 +179,27 @@
 
 
 		/**
-		 * Add a container, which is a collection of items.
+		 * Add a standard, top-level button item.
 		 *
-		 * @param id Identifier for the new container.  If omitted or null, a unique id will be generated.
-		 * @param type Container type.  If omitted, 'sequence' will be used by default.
-		 * @param compact Whether or not a group-type container is compact.  False by default.
-		 * @param properties Container properties.
-		 * @param items Array of items to initialise the container with.  If omitted the container will be empty.
-		 * @param position Where to position the container relative to other containers.  If omitted the container will
-		 *   be added at the end.
-		 * @param relativeTo Reference to another container that this container should be positioned relative to.  Only
-		 *   used when position is either 'before' or 'after'.
-		 *
-		 * @return This object, for method chaining.
-		 */
-		addContainer: function(id, type, compact, properties, items, position, relativeTo) {
-//			console.log('jquery.ui.toolbar.addContainer()', id, type, compact, properties, items, position, relativeTo);
-			var self = this, initialSelection = null, $container;
-			type = type || 'sequence';
-			id = id || this._generateUniqueId(type);
-			properties = $.isPlainObject(properties) ? properties : {};
-			position = position === null ? '_last' : position;
-			$container = this._createContainer(id, type, compact, properties);
-			this._addContainer($container, position, relativeTo);
-			if ($.isArray(items) && items.length > 0) {
-				$.each(items, function(itemIndex, item) {
-					if (typeof item === 'string' || item.type === 'separator') {
-						self.addSeparator($.isPlainObject(item) ? item.id : null, id, '_last', null);
-					} else {
-						self.addItem(item.id, item.properties, id, '_last', null, true);
-					}
-					if (type === 'sequence' && item.selected) {
-						self.selectItem(item.id);
-					}
-				});
-				if (type === 'group') {
-					$.each(items, function(itemIndex, item) {
-						if (initialSelection === null || item.selected) {
-							initialSelection = item.id;
-						}
-					});
-					if (initialSelection !== null) {
-						self.selectItem(initialSelection);
-					}
-				}
-			}
-			return this._fixHeight();
-		},
-
-		/**
-		 * Remove the specified container.
-		 *
-		 * @param containerReference Container reference, which may be the container jQuery object, the id, the special
-		 *   strings "_first" or "_last", or a numeric index.
-		 *
-		 * @return This object, for method chaining.
-		 */
-		removeContainer: function(containerReference) {
-//			console.log('jquery.ui.toolbar.removeContainer()', containerReference);
-			var self = this, $container = this.getContainer(containerReference);
-			this.getItemsInContainer($container).each(function(i, item) {
-				self.removeItem($(item));
-			});
-			$container.remove();
-			return this._fixHeight();
-		},
-
-		/**
-		 * Retrieve the specified container.
-		 *
-		 * @param containerReference Container reference, which may be the container jQuery object, the id, the special
-		 *   strings "_first" or "_last", or a numeric index.
-		 *
-		 * @return Container jQuery object as identified by the reference, or null if there is no such container.
-		 */
-		getContainer: function(containerReference) {
-			console.log('getContainer()', containerReference);
-			var result = null,
-				$containers = this.getAllContainers();
-			console.log('all containers: ', $containers);
-			containerReference = containerReference || '_last';
-			if (typeof containerReference === 'number') {
-				result = $containers.eq(containerReference);
-			} else if (typeof containerReference === 'string') {
-				switch (containerReference) {
-					case '_first':
-						result = $containers.first();
-						break;
-					case '_last':
-						result = $containers.last();
-						break;
-					default:
-						$containers.each(function(containerIndex, container) {
-							var $container = $(container);
-							if (result === null && $container.data('toolbar.container').id === containerReference) {
-								result = $container;
-							}
-						});
-				}
-			} else if ($containers.index(containerReference) >= 0) {
-				result = containerReference;
-			}
-			console.log('result = ', result);
-			return result;
-		},
-
-		/**
-		 * Get all containers.
-		 *
-		 * @return jQuery object containing all containers in this toolbar.
-		 */
-		getAllContainers: function() {
-			return $(this.element).children('.' + this.options.cssClass.list);
-		},
-
-		/**
-		 * Get all items and separators in the given container.
-		 *
-		 * @param containerReference Container reference identifying which container to add the item to.  May be a
-		 *   container jQuery object, the id, the special strings "_first" or "_last", or a numeric index.  If omitted,
-		 *   the item will be added to the last existing container.
-		 *
-		 * @return jQuery object containing all items and separators in the given container.  This does not include
-		 *   proxy items.
-		 */
-		getItemsInContainer: function(containerReference) {
-			var $container = this.getContainer(containerReference),
-				itemClass = this._getContainerItemClass($container);
-			return $container.find('.' + itemClass);
-		},
-
-		/**
-		 * Add an item.
-		 *
-		 * @param id Identifier for the new container.  If omitted, a unique id will be generated.
-		 * @param properties Properties to assign to the new container.
-		 * @param containerReference Container reference identifying which container to add the item to.  May be a
-		 *   container jQuery object, the id, the special strings "_first" or "_last", or a numeric index.  If omitted,
-		 *   the item will be added to the last existing container.
-		 * @param position Position within the container to add the item.  If omitted the item will be added at the end
-		 *   of the selected container.
+		 * @param id Identifier for the new item.  If omitted, a unique id will be generated.
+		 * @param group Group to assign the item to.
+		 * @param properties Properties to assign to the new item.
+		 * @param position Position within the toolbar to add the item.  If omitted the item will be added at the end.
 		 * @param relativeTo Reference to another item that the item should be positioned relative to.  Only relevant
 		 *   if position is "before" or "after".
-		 * @param dontSelect Set to true to prevent selection of the item when it is being added to an empty container.
-		 *   This should not be used externally.  Default is false.
+		 * @param selected Whether to initially select the new item.  False by default.
 		 *
 		 * @return This object, for method chaining.
 		 */
-		addItem: function(id, properties, containerReference, position, relativeTo, dontSelect) {
-//			console.log('jquery.ui.toolbar.addItem()', id, properties, containerReference, position, relativeTo, dontSelect);
-			var o = this.options, $item,
-				$container = this.getContainer(containerReference),
-				containerProperties = $container.data('toolbar.container');
+		addButtonItem: function(id, group, properties, position, relativeTo, selected) {
+//			console.log('jquery.ui.toolbar', 'addButtonItem()', id, group, properties, position, relativeTo, selected);
 			id = id || this._generateUniqueId('item');
 			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
 			position = position === null ? '_last' : position;
-			$item = this._createItem(id, properties, this._getContainerItemClass($container));
-			this._addItem($item, $container, position, relativeTo);
-			if (!dontSelect && containerProperties.type === 'group' && $container.children('.' + o.cssClass.item).length === 1) {
+			var isFirst = this.getItemsInGroup(group).length === 0,
+				$item = this._createButtonItem(id, group, properties, 'ui-toolbar-item-button');
+			this._addItem($item, $(this.element), position, relativeTo);
+			if (selected || (isFirst && this.toolbarInitialised && properties.toggle)) {
 				this.selectItem($item);
 			}
 			return this._fixHeight();
@@ -311,24 +209,77 @@
 		 * Add a separator item.
 		 *
 		 * @param id Identifier for the new separator.  If omitted or null, a unique id will be generated.
-		 * @param containerReference Container reference identifying which container to add the separator to.  May be a
-		 *   container jQuery object, the id, the special strings "_first" or "_last", or a numeric index.  If omitted,
-		 *   the separator will be added to the last existing container.
-		 * @param position Where to position the separator relative to other items and separators in the container.  If
+		 * @param position Where to position the separator relative to other items and separators in the toolbar.  If
 		 *   omitted the separator will be added at the end.
-		 * @param relativeTo Reference to another container that the separator should be positioned relative to.  Only
+		 * @param relativeTo Reference to another item that the separator should be positioned relative to.  Only
 		 *   used when position is either 'before' or 'after'.
 		 *
 		 * @return This object, for method chaining.
 		 */
-		addSeparator: function(id, containerReference, position, relativeTo) {
-//			console.log('jquery.ui.toolbar.addSeparator()', id, containerReference, position, relativeTo);
-			var $separator, $container;
+		addSeparatorItem: function(id, position, relativeTo) {
+//			console.log('jquery.ui.toolbar', 'addSeparatorItem()', id, position, relativeTo);
 			id = id || this._generateUniqueId('separator');
-			$separator = this._createSeparator(id);
-			$container = this.getContainer(containerReference);
-			this._addItem($separator, $container, position, relativeTo);
+			var $separator;
+			$separator = this._createSeparatorItem(id);
+			this._addItem($separator, $(this.element), position, relativeTo);
 			return this._fixHeight();
+		},
+
+		/**
+		 * Add a proxy button item for a hidden / expandable group.
+		 *
+		 * @param id Identifier for the new item.  If omitted, a unique id will be generated.
+		 * @param group Group to assign the item to.
+		 * @param properties Properties to assign to the new item.
+		 * @param position Position within the toolbar to add the item.  If omitted the item will be added at the end.
+		 * @param relativeTo Reference to another item that the item should be positioned relative to.  Only relevant
+		 *   if position is "before" or "after".
+		 *
+		 * @return This object, for method chaining.
+		 */
+		addExpanderProxyItem: function(id, group, properties, position, relativeTo) {
+//			console.log('jquery.ui.toolbar', 'addExpanderProxyItem()', id, group, properties, position, relativeTo);
+			if (this.expandersMap[group]) {
+				throw 'Error: Cannot create duplicate proxy for group "' + group + '"';
+			}
+			id = id || this._generateUniqueId('item');
+			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
+			position = position === null ? '_last' : position;
+			var $item = this._createButtonItem(id, group, properties, 'ui-toolbar-item-expander-proxy');
+			this._addItem($item, $(this.element), position, relativeTo);
+			this.expandersMap[group] = $('<ul></ul>')
+				.addClass(this.options.cssClass.expander)
+				.addClass('ui-helper-reset')
+				.appendTo($item);
+			return this._fixHeight();
+		},
+
+		/**
+		 * Add an item to an expander.
+		 *
+		 * @param id Identifier for the new item.  If omitted, a unique id will be generated.
+		 * @param group Group to assign the item to.
+		 * @param properties Properties to assign to the new item.
+		 * @param position Position within the toolbar to add the item.  If omitted the item will be added at the end.
+		 * @param relativeTo Reference to another item that the item should be positioned relative to.  Only relevant
+		 *   if position is "before" or "after".
+		 *
+		 * @return This object, for method chaining.
+		 */
+		addExpanderButtonItem: function(id, group, properties, position, relativeTo, selected) {
+//			console.log('jquery.ui.toolbar', 'addExpanderButtonItem()', id, group, properties, position, relativeTo, selected);
+			id = id || this._generateUniqueId('item');
+			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
+			position = position === null ? '_last' : position;
+			var isFirst = this.getItemsInGroup(group).length === 0,
+				$item = this._createButtonItem(id, group, properties, 'ui-toolbar-item-expander-button'),
+				$target = $('<li></li>').appendTo(this.expandersMap[group]);
+			this._addItem($item, $target, position, relativeTo);
+			if (selected || (isFirst && this.toolbarInitialised)) {
+				this.selectItem($item);
+			}
+			return this._fixHeight();
+
 		},
 
 		/**
@@ -340,7 +291,7 @@
 		 * @return This object, for method chaining.
 		 */
 		removeItem: function(itemReference) {
-//			console.log('jquery.ui.toolbar.removeItem()', itemReference);
+//			console.log('jquery.ui.toolbar', 'removeItem()', itemReference);
 			this.getItem(itemReference).remove();
 			return this._fixHeight();
 		},
@@ -353,9 +304,10 @@
 		 *
 		 * @return Item jQuery object as identified by the reference, or null if no such item exists.
 		 */
-		getItem: function(itemReference, $container) {
+		getItem: function(itemReference) {
+//			console.log('jquery.ui.toolbar', 'getItem()', itemReference);
 			var result = null,
-				$items = this.getItemsInContainer($container || this.getItemContainer(itemReference));
+				$items = this.getAllItems();
 			itemReference = itemReference || '_last';
 			if (typeof itemReference === 'number') {
 				result = $items.eq(itemReference);
@@ -382,33 +334,35 @@
 		},
 
 		/**
-		 * Get the container containing the specified item.
+		 * Get all items and separators in the toolbar.
 		 *
-		 * @param itemReference Item reference, which may be the item jQuery object, the item identifier, the special
-		 *   strings "_first" or "_last", or a numeric index.
-		 *
-		 * @return Container jQuery object as identified by the reference, or null if there is no such container.
+		 * @return jQuery object containing all items and separators in the toolbar.
 		 */
-		getItemContainer: function(itemReference) {
-			var self = this, result = null;
-			this.getAllContainers().each(function(containerIndex, container) {
-				if (result === null) {
-					var $container = $(container);
-					self.getItemsInContainer($container).each(function(itemIndex, item) {
-						if (result === null) {
-							var $item = $(item);
-							if (typeof itemReference === 'string') {
-								if (result === null && $item.data('toolbar.item').id === itemReference) {
-									result = $container;
-								}
-							} else if ($item.is(itemReference)) {
-								result = $container;
-							}
-						}
-					});
-				}
+		getAllItems: function() {
+//			console.log('jquery.ui.toolbar', 'getAllItems()');
+			return $(this.element).find('.' + this.options.cssClass.item);
+		},
+
+		/**
+		 * Get thte set of all items and separators in the specified group.
+		 *
+		 * @param group Group name.
+		 *
+		 * @return jQuery object containing all items and separators in the given group.  This does not include
+		 *   proxy items.
+		 */
+		getItemsInGroup: function(group) {
+//			console.log('jquery.ui.toolbar', 'getItemsInGroup()', group);
+			return this.getAllItems().not('.' + this.options.cssClass.itemExpanderProxy).filter(function() {
+				return $(this).data('toolbar.item').group === group;
 			});
-			return result;
+		},
+
+		getProxyButtonForGroup: function(group) {
+//			console.log('jquery.ui.toolbar', 'getProxyButtonForGroup()', group);
+			return this.getAllItems().filter('.' + this.options.cssClass.itemExpanderProxy).filter(function() {
+				return $(this).data('toolbar.item').group === group;
+			});
 		},
 
 		/**
@@ -417,12 +371,49 @@
 		 * @param itemReference Item reference, which may be the item jQuery object, the item identifier, the special
 		 *   strings "_first" or "_last", or a numeric index.
 		 *
-		 * @return This object, for method chaining.
+		 * @return True if the selection is successful, otherwise false.
 		 */
 		selectItem: function(itemReference) {
-//			console.log('jquery.ui.toolbar.selectItem()', itemReference);
-			this._selectItem(this.getItem(itemReference));
-			return this;
+//			console.log('jquery.ui.toolbar', 'selectItem()', itemReference);
+			var o = this.options, proceed = true, $icon, $proxyButton,
+				$item = this.getItem(itemReference),
+				properties = $item.data('toolbar.item'),
+				isActive = $item.is('.' + o.cssClass.active);
+			if (properties.group) {
+				if ($item.is('.' + o.cssClass.itemExpanderProxy)) {
+					this.expandersMap[properties.group].slideToggle();
+				} else {
+					this.hideAllExpanders();
+					this.getItemsInGroup(properties.group).filter('.' + o.cssClass.active).each(function(itemIndex, itemToDeselect) {
+						var itemToDeselectProperties = $(itemToDeselect).data('toolbar.item');
+						$(this).removeClass(o.cssClass.active);
+						if (proceed && $.isFunction(itemToDeselectProperties.toggle)) {
+							proceed = (itemToDeselectProperties.toggle.call(this, false) !== false);
+						}
+					});
+					if (proceed) {
+						$item.addClass(o.cssClass.active);
+					}
+				}
+				if (proceed) {
+					$icon = $item.children('.' + o.cssClass.icon);
+					$proxyButton = this.getProxyButtonForGroup(properties.group);
+					$proxyButton.children('.' + o.cssClass.icon).attr({
+						src: $icon.attr('src'),
+						alt: $icon.attr('alt')
+					});
+					$proxyButton.children('.' + o.cssClass.label).text($item.children('.' + o.cssClass.label).text());
+				}
+			} else if (properties.toggle) {
+				$item.toggleClass(o.cssClass.active);
+			}
+			if (proceed && $.isFunction(properties.toggle)) {
+				proceed = (properties.toggle.call(this, !isActive) !== false);
+			}
+			if (proceed && $.isFunction(properties.action)) {
+				proceed = (properties.action.call(this, !isActive) !== false);
+			}
+			return proceed;
 		},
 
 		/**
@@ -431,8 +422,8 @@
 		 * @return This object, for method chaining.
 		 */
 		hideAllExpanders: function() {
-			var o = this.options;
-			this.getAllContainers().children('.' + o.cssClass.itemCompact).find('.' + o.cssClass.expander).hide();
+//			console.log('jquery.ui.toolbar', 'hideAllExpanders()');
+			$(this.element).find('.' + this.options.cssClass.expander).hide();
 			return this;
 		},
 
@@ -449,100 +440,69 @@
 		},
 
 		/**
-		 * Create a container jQuery object.
-		 *
-		 * @param id
-		 * @param type
-		 * @param compact
-		 * @param properties
-		 *
-		 * @return jQuery object.
-		 */
-		_createContainer: function(id, type, compact, properties) {
-			var o = this.options,
-				$proxyButton, $expander,
-				$container = $('<ul></ul>')
-					.addClass(o.cssClass.list)
-					.addClass('ui-helper-reset')
-					.data('toolbar.container', $.extend(true, {}, properties, {
-						id: id,
-						type: type,
-						compact: compact
-					}));
-			if (compact) {
-				$expander = $('<ul></ul>').addClass(o.cssClass.expander + ' ui-widget-content ui-helper-reset ui-helper-clearfix');
-				$proxyButton = this._createItemButton($.extend(true, {}, itemDefaults, { tooltip: properties.tooltip })).addClass(o.cssClass.proxyButton).click(function() {
-					$expander.slideToggle();
-				});
-				$('<li></li>')
-					.addClass(o.cssClass.item)
-					.addClass(o.cssClass.itemCompact)
-					.append($proxyButton)
-					.append($expander.hide())
-					.appendTo($container);
-			}
-			return $container;
-		},
-
-		/**
-		 * Add the given container to the top level.
-		 *
-		 * @param $container
-		 * @param position
-		 * @param relativeTo
-		 *
-		 * @return This object for method chaining.
-		 */
-		_addContainer: function($container, position, relativeTo) {
-			switch (position) {
-				case '_first':
-					$(this.element).prepend($container);
-					break;
-				case '_last':
-				case undefined:
-				case null:
-					$(this.element).append($container);
-					break;
-				case '_before':
-					this.getContainer(relativeTo).before($container);
-					break;
-				case '_after':
-					this.getContainer(relativeTo).after($container);
-					break;
-				default:
-					throw 'Error: Unknown position "' + position + '" in _addContainer()';
-			}
-			return this;
-		},
-
-		/**
 		 * Create an item jQuery object.
 		 *
 		 * @param id
 		 * @param properties
-		 * @param cssClass
 		 *
 		 * @return jQuery object.
 		 */
-		_createItem: function(id, properties, cssClass) {
-			var self = this,
-				$button = this._createItemButton(properties).click(function(evt) {
-				setTimeout(function() {
-					$button.blur();
-				}, 0);
-				if (self.selectItem($button.parent()) === false) {
+		_createButtonItem: function(id, group, properties, additionalCssClass) {
+//			console.log('jquery.ui.toolbar', '_createButtonItem()', id, group, properties);
+			var self = this, o = this.options;
+			return $('<a></a>')
+				.attr(o.attributes.item || {})
+				.attr(properties.attributes.item || {})
+				.attr({
+					href: '#',
+					title: properties.tooltip || ''
+				})
+				.addClass(o.cssClass.item || '')
+				.addClass(properties.cssClass.item || '')
+				.addClass(additionalCssClass)
+				.addClass('ui-state-default')
+				.append(
+					$('<img/>')
+						.attr(o.attributes.icon || {})
+						.attr(properties.attributes.icon || {})
+						.attr({
+							src: o.iconSrcPrefix + properties.icon.src,
+							alt: properties.icon.alt || o.defaultIconAlt
+						})
+						.addClass(o.cssClass.icon || '')
+						.addClass(properties.cssClass.icon || '')
+				)
+				.append(
+					$('<span></span>')
+						.attr(o.attributes.label || {})
+						.attr(properties.attributes.label || {})
+						.addClass(o.cssClass.label || '')
+						.addClass(properties.cssClass.label || '')
+						.text(properties.text || '')
+				)
+				.data('toolbar.item', $.extend(true, {}, properties, {
+					id: id,
+					group: group
+				}))
+				.hover(
+					function() {
+						$(this).addClass('ui-state-hover');
+					},
+					function() {
+						$(this).removeClass('ui-state-hover');
+					}
+				)
+				.click(function(evt) {
+					var $item = $(this);
+					setTimeout(function() {
+						$item.blur();
+					}, 0);
+					self.selectItem($item);
+					// Prevent default because we have expander buttons inside the expander proxy element.
+					// If we don't do this, they both get clicked at the same time when selecting an expander button.
 					evt.preventDefault();
 					return false;
-				}
-			});
-			return $('<li></li>')
-				.addClass(this.options.cssClass.item)
-				.addClass(cssClass)
-				.addClass('ui-helper-reset')
-				.data('toolbar.item', $.extend(true, {}, properties, {
-					id: id
-				}))
-				.append($button);
+				});
 		},
 
 		/**
@@ -552,99 +512,27 @@
 		 *
 		 * @return jQuery object.
 		 */
-		_createSeparator: function(id) {
-			return $('<li></li>').addClass(this.options.cssClass.separator).data('toolbar.container', {
-				id: id
-			});
-		},
-
-		/**
-		 * Create an item button jQuery object.
-		 *
-		 * @param properties
-		 *
-		 * @return jQuery object.
-		 */
-		_createItemButton: function(properties) {
-			properties = properties || {};
-			var o = this.options,
-				$button = $('<a></a>')
-					.attr({
-						href: '#',
-						title: properties.tooltip || ''
-					})
-					.addClass(o.cssClass.button || '')
-					.addClass(properties.cssClass.button || '')
-					.addClass('ui-state-default')
-					.hover(
-						function() {
-							$(this).addClass('ui-state-hover');
-						},
-						function() {
-							$(this).removeClass('ui-state-hover');
-						}
-					);
-			if (o.attributes.button) {
-				$button.attr(o.attributes.button);
-			}
-			if (properties.attributes.button) {
-				$button.attr(properties.attributes.button);
-			}
-			return $button.append(this._createItemIcon(properties)).append(this._createItemLabel(properties));
-		},
-
-		/**
-		 * Create an item icon image jQuery object.
-		 *
-		 * @param properties
-		 *
-		 * @return jQuery object.
-		 */
-		_createItemIcon: function(properties) {
-			var o = this.options,
-				$icon = $('<img/>')
-					.attr({
-						src: o.iconSrcPrefix + properties.icon.src,
-						alt: properties.icon.alt || o.defaultIconAlt
-					})
-					.addClass(o.cssClass.icon || '')
-					.addClass(properties.cssClass.icon || '');
-			if (o.attributes.icon) {
-				$icon.attr(o.attributes.icon);
-			}
-			if (properties.attributes.icon) {
-				$icon.attr(properties.attributes.icon);
-			}
-			return $icon;
-		},
-
-		/**
-		 * Create an item label span jQuery object.
-		 *
-		 * @param properties
-		 *
-		 * @return jQuery object.
-		 */
-		_createItemLabel: function(properties) {
-			var o = this.options;
+		_createSeparatorItem: function(id) {
+//			console.log('jquery.ui.toolbar', '_createSeparatorItem()', id);
 			return $('<span></span>')
-				.addClass(o.cssClass.label)
-				.addClass(properties.cssClass.label)
-				.text(properties.text || '');
+				.addClass(this.options.cssClass.item)
+				.addClass(this.options.cssClass.itemSeparator)
+				.data('toolbar.item', {
+					id: id
+				});
 		},
 
 		/**
-		 * Add the given item to the given container.
+		 * Add the given item to the toolbar.
 		 *
 		 * @param $item
-		 * @param $container
 		 * @param position
 		 * @param relativeTo
 		 *
 		 * @return This object for method chaining.
 		 */
-		_addItem: function($item, $container, position, relativeTo) {
-			var $target = this._getContainerTarget($container);
+		_addItem: function($item, $target, position, relativeTo) {
+//			console.log('jquery.ui.toolbar', '_addItem()', $item, $target, position, relativeTo);
 			switch (position) {
 				case '_first':
 					$target.prepend($item);
@@ -655,10 +543,18 @@
 					$target.append($item);
 					break;
 				case '_before':
-					this.getItem(relativeTo, $container).before($target);
+					$target = this.getItem(relativeTo);
+					if ($target === null) {
+						throw 'Error: Cannot position relative to unkown item "' + relativeTo + '" in _addItem()';
+					}
+					$target.before($item);
 					break;
 				case '_after':
-					this.getItem(relativeTo, $container).after($target);
+					$target = this.getItem(relativeTo);
+					if ($target === null) {
+						throw 'Error: Cannot position relative to unkown item "' + relativeTo + '" in _addItem()';
+					}
+					$target.after($item);
 					break;
 				default:
 					throw 'Error: Unknown position "' + position + '" in _addItem()';
@@ -667,99 +563,34 @@
 		},
 
 		/**
-		 * Select the given item jQuery object.
-		 *
-		 * @param $item
-		 *
-		 * @return True for success, false for failure.
-		 */
-		_selectItem: function($item) {
-			var o = this.options, proceed = true, itemPropertiesToDeselect, $proxyButton, $icon,
-				properties = $item.data('toolbar.item'),
-				$container = $item.parents('.' + o.cssClass.list),
-				containerProperties = $container.data('toolbar.container'),
-				$button = $item.children('.' + o.cssClass.button),
-				isActive = $button.is('.' + o.cssClass.active);
-			if ($.isFunction(properties.toggle)) {
-				proceed = properties.toggle.call(this, !isActive) !== false;
-			}
-			if (proceed) {
-				this.hideAllExpanders();
-				// Ignore clicks on an already-active item in a container
-				if (!$button.is('.' + o.cssClass.active) || containerProperties.type === 'sequence') {
-					if (containerProperties.type !== 'sequence') {
-						$container.find('.' + o.cssClass.button + '.' + o.cssClass.active).not($button).each(function(buttonIndex, buttonToDeselect) {
-							$(this).removeClass(o.cssClass.active);
-							itemPropertiesToDeselect = $(buttonToDeselect).parent().data('toolbar.item');
-							if (proceed && $.isFunction(itemPropertiesToDeselect.toggle)) {
-								proceed = (itemPropertiesToDeselect.toggle.call(this, false) !== false);
-							}
-						});
-					}
-					if (proceed) {
-						if (containerProperties.type === 'sequence' && properties.toggle) {
-							$button.toggleClass(o.cssClass.active);
-						} else if (containerProperties.type === 'group') {
-							$button.addClass(o.cssClass.active);
-							if (containerProperties.compact) {
-								$icon = $button.find('.' + o.cssClass.icon);
-								$proxyButton = $container.find('.' + o.cssClass.itemCompact).children('.' + o.cssClass.proxyButton);
-								$proxyButton.children('.' + o.cssClass.icon).attr({
-									src: $icon.attr('src'),
-									alt: $icon.attr('alt')
-								});
-								$proxyButton.children('.' + o.cssClass.label).text($button.children('.' + o.cssClass.label).text());
-								$container.find('.' + o.cssClass.expander).hide();
-							}
-						}
-					} else {
-						return false;
-					}
-				}
-			}
-			if (proceed && $.isFunction(properties.action)) {
-				proceed = properties.action.call(this, !isActive) !== false;
-			}
-			return proceed;
-		},
-
-
-		_getContainerItemClass: function(containerReference) {
-			var key = this.getContainer(containerReference).data('toolbar.container').compact ? 'itemExpanded' : 'itemStandard';
-			return this.options.cssClass[key];
-		},
-
-		_getContainerTarget: function(containerReference) {
-			var $container = this.getContainer(containerReference);
-			return $container.data('toolbar.container').compact ? $container.find('.' + this.options.cssClass.expander) : $container;
-		},
-
-
-		/**
 		 * Fix the heights of the buttons and separators at the top level, so that they are all equal height
 		 * corresponding to the height required by the tallest item.
 		 */
 		_fixHeight: function() {
 			var o = this.options,
 				maxButtonHeight = 0,
-				$buttons = this.getAllContainers().children('.' + o.cssClass.item).not('.' + o.cssClass.itemExpanded).children('.' + o.cssClass.button);
-			// We need to remove any previously set fixed height to determine the correct largest element.
-			$buttons.css({
-				height: 'auto'
-			});
-			// Iterate through the elements and find the one with greatest natural height.
-			$.each($buttons, function(buttonIndex, button) {
-				var $button = $(button);
-				maxButtonHeight = Math.max(maxButtonHeight, $button.innerHeight() - parseInt($button.css('paddingTop'), 10) - parseInt($button.css('paddingBottom'), 10));
-			});
-			// Set all buttons to that height.
-			$buttons.css({
-				height: maxButtonHeight + 'px'
-			});
-			// Set all separators to that height.
-			$(this.element).find('.' + o.cssClass.separator).css({
-				height: maxButtonHeight + 'px'
-			});
+				$items = this.getAllItems();
+			// Only fix the height after the _create() constructor is done
+			if (this.toolbarInitialised) {
+//				console.log('jquery.ui.toolbar', '_fixHeight()');
+				// We need to remove any previously set fixed height to determine the correct largest element.
+				$items.css({
+					height: 'auto'
+				});
+				// Iterate through the elements and find the one with greatest natural height.
+				$.each($items, function(itemIndex, item) {
+					var $item = $(item);
+					maxButtonHeight = Math.max(maxButtonHeight, $item.innerHeight() - parseInt($item.css('paddingTop'), 10) - parseInt($item.css('paddingBottom'), 10));
+				});
+				// Set all buttons to that height.
+				$items.css({
+					height: maxButtonHeight + 'px'
+				});
+				// Set all separators to that height.
+				$(this.element).find('.' + o.cssClass.itemSeparator).css({
+					height: maxButtonHeight + 'px'
+				});
+			}
 			return this;
 		}
 	});
