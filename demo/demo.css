@@ -1,0 +1,18 @@
+/**
+ * demo.css
+ * Stylesheet for jquery.ui.toolbar widget demonstration pages.
+ */
+
+html, body { padding: 0; margin: 0; }
+h1, h2, div, ul, li { font-family: sans-serif; }
+h1 { margin-top: 0; }
+h2 { font-size: 1em; margin: 0; }
+.inner { padding: 16px; }
+.left-column { float: left; width: 100%; }
+.left-column .inner { margin-right: 260px; }
+.right-column { float: left; width: 260px; margin-left: -260px; }
+.controls { float: right; border: 1px solid #000; margin: 1em 0; width: 100%; }
+.controls p { margin: 4px 8px; }
+.controls h2 { margin: 4px 8px; }
+.controls ul li a { display: block; margin: 4px 8px; }
+.note { font-size: small; font-style: italic; color: #666; }

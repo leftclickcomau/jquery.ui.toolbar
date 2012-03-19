@@ -98,6 +98,7 @@
 		 */
 		_create: function() {
 			var self = this, o = this.options;
+			$.Widget.prototype._create.call(this);
 			$(this.element).addClass(o.cssClass.toolbar).addClass(o.labels ? o.cssClass.toolbarLabels : o.cssClass.toolbarNoLabels).addClass('ui-widget-content ui-helper-reset ui-helper-clearfix');
 			if ($.isArray(o.definition) && o.definition.length > 0) {
 				$.each(o.definition, function(groupIndex, group) {
@@ -116,6 +117,7 @@
 		 */
 		destroy: function() {
 			$(this.element).empty();
+			$.Widget.prototype.destroy.call(this);
 		},
 
 		/**
@@ -137,6 +139,7 @@
 					this._fixHeight();
 					break;
 			}
+			$.Widget.prototype._setOption.call(this, option, value);
 		},
 
 
