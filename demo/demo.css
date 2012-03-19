@@ -11,7 +11,7 @@ h2 { font-size: 1em; margin: 0; }
 .left-column { float: left; width: 100%; }
 .left-column .inner { margin-right: 260px; }
 .right-column { float: left; width: 260px; margin-left: -260px; }
-.controls { float: right; border: 1px solid #000; margin: 1em 0; width: 100%; }
+.controls { float: right; margin: 1em 0; width: 100%; }
 .controls p { margin: 4px 8px; }
 .controls h2 { margin: 4px 8px; }
 .controls ul li a { display: block; margin: 4px 8px; }
