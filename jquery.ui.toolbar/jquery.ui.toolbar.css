@@ -37,4 +37,4 @@
 .ui-toolbar-labels ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button { width: 56px; }
 .ui-toolbar.ui-toolbar-no-labels ul.ui-toolbar-list li.ui-toolbar-item a.ui-toolbar-button span.ui-toolbar-label { display: none; }
 
-.ui-toolbar .ui-toolbar-separator { display: block; float: left; width: 4px; height: 100%; background-color: #aaa; margin: 0 4px; padding: 4px 0 8px 0; }
+.ui-toolbar .ui-toolbar-separator { display: block; float: left; width: 4px; background: transparent url(images/separator.png) center center repeat-y; margin: 0 8px; padding: 4px 0 8px 0; }
