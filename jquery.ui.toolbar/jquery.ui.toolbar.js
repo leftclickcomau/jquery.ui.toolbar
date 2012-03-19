@@ -656,6 +656,7 @@
 		 */
 		_getContainerIndex: function(containerReference) {
 			var o = this.options, result = null;
+			containerReference = containerReference || '_last';
 			if (typeof containerReference === 'number') {
 				result = containerReference;
 			} else if (typeof containerReference === 'string') {
@@ -664,7 +665,7 @@
 						result = 0;
 						break;
 					case '_last':
-						result = $(this.element).children('.' + o.cssClass.list).length;
+						result = $(this.element).children('.' + o.cssClass.list).length - 1;
 						break;
 					default:
 						$(this.element).children('.' + o.cssClass.list).each(function(containerIndex, container) {
@@ -689,9 +690,12 @@
 		 */
 		_getItemIndex: function(itemReference, $container) {
 			var o = this.options, result = null, index, itemClass;
+			itemReference = itemReference || '_last';
 			$container = $container || this.getItemContainer(itemReference);
 			itemClass = $container.data('toolbar.container').compact ? 'itemExpanded' : 'itemStandard';
-			if (typeof itemReference === 'number') {
+			if (itemReference === null) {
+				result = 0;
+			} else if (typeof itemReference === 'number') {
 				result = itemReference;
 			} else if (typeof itemReference === 'string') {
 				switch (itemReference) {
@@ -699,7 +703,7 @@
 						result = 0;
 						break;
 					case '_last':
-						result = $container.find('.' + o.cssClass[itemClass]).length;
+						result = $container.find('.' + o.cssClass[itemClass]).length - 1;
 						break;
 					default:
 						$container.find('.' + o.cssClass[itemClass]).each(function(itemIndex, item) {
