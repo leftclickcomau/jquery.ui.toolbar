@@ -48,12 +48,12 @@
 	"use strict";
 
 	var toggleLabels, updateToggleLabels,
-			$output = $('#demo-output'),
-			$toolbar = $('#demo-toolbar').toolbar({
-				iconSrcPrefix: 'images/',
-				labels: false
-			}),
-			animals = { dog: 'Dog', cat: 'Cat', mouse: 'Mouse' };
+		$output = $('#demo-output'),
+		$toolbar = $('#demo-toolbar').toolbar({
+			iconSrcPrefix: 'images/',
+			labels: false
+		}),
+		animals = { dog: 'Dog', cat: 'Cat', mouse: 'Mouse' };
 
 	// Create the first container and its items.  This shows a chained style of coding.
 	$toolbar.toolbar('addContainer', 'things', 'sequence')
