@@ -259,15 +259,6 @@
 		},
 
 		/**
-		 * Get the number of containers.
-		 *
-		 * @return Number of containers in this toolbar.
-		 */
-		getContainersCount: function() {
-			return $(this.element).children('.' + this.options.cssClass.list).length;
-		},
-
-		/**
 		 * Get all items and separators in the given container.
 		 *
 		 * @param containerReference Container reference identifying which container to add the item to.  May be a
@@ -281,21 +272,6 @@
 			var $container = this.getContainer(containerReference),
 				itemClass = this._getContainerItemClass($container);
 			return $container.find('.' + itemClass);
-		},
-
-		/**
-		 * Get the number of items and separators in the given container.
-		 *
-		 * @param containerReference Container reference identifying which container to add the item to.  May be a
-		 *   container jQuery object, the id, the special strings "_first" or "_last", or a numeric index.  If omitted,
-		 *   the item will be added to the last existing container.
-		 *
-		 * @return Number of items and separators in the given container.  This does not include proxy items.
-		 */
-		getItemCountInContainer: function(containerReference) {
-			var $container = this.getContainer(containerReference),
-				itemClass = this._getContainerItemClass($container);
-			return $container.find('.' + itemClass).length;
 		},
 
 		/**
