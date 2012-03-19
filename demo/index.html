@@ -47,7 +47,7 @@
 			labels: false,
 			definition: [
 				{
-					type: 'actions',
+					type: 'sequence',
 					id: 'actionsDemo',
 					items: [
 						{
@@ -77,16 +77,8 @@
 									$output.append($('<li></li>').text('Rolled the Dice, got a ' + (Math.floor(Math.random() * 6 + 1))));
 								}
 							}
-						}
-					]
-				},
-				{
-					type: 'separator'
-				},
-				{
-					type: 'modal',
-					id: 'toggleDemo1',
-					items: [
+						},
+						'separator',
 						{
 							id: 'star',
 							properties: {
@@ -100,13 +92,7 @@
 									$output.append($('<li></li>').text('Switched the Star ' + (targetState ? 'on' : 'off')));
 								}
 							}
-						}
-					]
-				},
-				{
-					type: 'modal',
-					id: 'toggleDemo2',
-					items: [
+						},
 						{
 							id: 'hat',
 							selected: true,
@@ -121,14 +107,12 @@
 									$output.append($('<li></li>').text(targetState ? 'Put the Hat on' : 'Took the Hat off'));
 								}
 							}
-						}
+						},
+						'separator'
 					]
 				},
 				{
-					type: 'separator'
-				},
-				{
-					type: 'modal',
+					type: 'group',
 					id: 'animal',
 					items: [
 						{
@@ -172,14 +156,12 @@
 									$output.append($('<li></li>').text((targetState ? 'Selected' : 'Deselected') + ' "Mouse" in the Animal group'));
 								}
 							}
-						}
+						},
+						'separator'
 					]
 				},
 				{
-					type: 'separator'
-				},
-				{
-					type: 'modal',
+					type: 'group',
 					compact: true,
 					id: 'sport',
 					properties: {
@@ -293,7 +275,6 @@
 	// Setup external controls
 	$('#demo1-controls a').button();
 	updateToggleLabels = function() {
-		console.log($toolbar.toolbar('option', 'labels') ? 'Toolbar Labels Off' : 'Toolbar Labels On');
 		$('a#toggle-toolbar-labels').button('option', 'label', ($toolbar.toolbar('option', 'labels') ? 'Toolbar Labels Off' : 'Toolbar Labels On'));
 	};
 	$('a#toggle-toolbar-labels').click(function() {
