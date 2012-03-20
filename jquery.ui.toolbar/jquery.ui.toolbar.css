@@ -18,22 +18,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.ui-toolbar a.ui-toolbar-item { display: block; float: left; padding: 4px 4px 8px 4px; line-height: 0; text-align: center; text-decoration: none; border: none; background: transparent; }
-.ui-toolbar a.ui-toolbar-item.ui-state-hover { background: url(images/hover.png) center bottom no-repeat; }
-.ui-toolbar a.ui-toolbar-item.ui-state-active { background: url(images/active.png) center bottom no-repeat; }
-.ui-toolbar a.ui-toolbar-item img.ui-toolbar-icon { width: 32px; height: 32px; margin: 4px 0; }
-.ui-toolbar a.ui-toolbar-item span.ui-toolbar-label { display: block; font-size: .625em; font-weight: normal; line-height: 1.1; overflow: hidden; }
+ul.ui-toolbar li.ui-toolbar-wrapper { position: relative; float: left; }
 
-.ui-toolbar a.ui-toolbar-item-expander-proxy { position: relative; background: url(images/compact.png) center bottom no-repeat; }
-.ui-toolbar a.ui-toolbar-item-expander-proxy.ui-state-hover { background: url(images/compact.png) center bottom no-repeat; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item { display: block; padding: 4px 4px 8px 4px; line-height: 0; text-align: center; text-decoration: none; border: none; background: transparent; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item.ui-state-hover { background: url(images/hover.png) center bottom no-repeat; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item.ui-state-active { background: url(images/active.png) center bottom no-repeat; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item img.ui-toolbar-icon { width: 32px; height: 32px; margin: 4px 0; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item span.ui-toolbar-label { display: block; font-size: .625em; font-weight: normal; line-height: 1.1; overflow: hidden; }
 
-.ui-toolbar ul.ui-toolbar-expander-list { display: none; position: absolute; top: 100%; left: 0; margin-top: 1px; width: auto; /* TODO Remove this */ border: 1px solid #ccc; }
-.ui-toolbar ul.ui-toolbar-expander-list a.ui-toolbar-item-expander-button { display: block; width: 100%; border: none; white-space: nowrap; padding: 0; text-align: left; background: none; }
-.ui-toolbar ul.ui-toolbar-expander-list a.ui-toolbar-item-expander-button img.ui-toolbar-icon { display: inline-block; width: 32px; height: 32px; margin: 4px; vertical-align: middle; }
-.ui-toolbar ul.ui-toolbar-expander-list a.ui-toolbar-item-expander-button span.ui-toolbar-label { display: inline-block; margin: 4px; font-size: smaller; font-weight: normal; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item-expander-proxy { background: url(images/compact.png) center bottom no-repeat; }
+ul.ui-toolbar li.ui-toolbar-wrapper a.ui-toolbar-item-expander-proxy.ui-state-hover { background: url(images/compact.png) center bottom no-repeat; }
 
-.ui-toolbar-labels a.ui-toolbar-item-button { width: 56px; }
-.ui-toolbar-labels a.ui-toolbar-item-expander-proxy { width: 56px; }
-.ui-toolbar.ui-toolbar-no-labels a.ui-toolbar-item span.ui-toolbar-label { display: none; }
+ul.ui-toolbar li.ui-toolbar-wrapper ul.ui-toolbar-expander-list { display: none; position: absolute; top: 100%; left: 0; margin-top: 1px; width: auto; }
+ul.ui-toolbar li.ui-toolbar-wrapper ul.ui-toolbar-expander-list a.ui-toolbar-item-expander-button { display: block; width: 100%; border: none; white-space: nowrap; padding: 0; text-align: left; background: none; }
+ul.ui-toolbar li.ui-toolbar-wrapper ul.ui-toolbar-expander-list a.ui-toolbar-item-expander-button img.ui-toolbar-icon { display: inline-block; width: 32px; height: 32px; margin: 4px; vertical-align: middle; }
+ul.ui-toolbar li.ui-toolbar-wrapper ul.ui-toolbar-expander-list a.ui-toolbar-item-expander-button span.ui-toolbar-label { display: inline-block; margin: 4px; font-size: smaller; font-weight: normal; }
 
-.ui-toolbar .ui-toolbar-item-separator { display: block; float: left; width: 4px; background: transparent url(images/separator.png) center center repeat-y; margin: 0 8px; padding: 4px 0 8px 0; }
+ul.ui-toolbar.ui-toolbar-labels li.ui-toolbar-wrapper a.ui-toolbar-item-button { width: 56px; }
+ul.ui-toolbar.ui-toolbar-labels li.ui-toolbar-wrapper a.ui-toolbar-item-expander-proxy { width: 56px; }
+ul.ui-toolbar.ui-toolbar-no-labels li.ui-toolbar-wrapper a.ui-toolbar-item span.ui-toolbar-label { display: none; }
+
+ul.ui-toolbar li.ui-toolbar-wrapper .ui-toolbar-item-separator { display: block; float: left; width: 4px; background: transparent url(images/separator.png) center center repeat-y; margin: 0 8px; padding: 4px 0 8px 0; }

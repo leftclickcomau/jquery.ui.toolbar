@@ -24,6 +24,8 @@
 (function($) {
 	"use strict";
 
+	var __DEBUG__ = false;
+
 	var itemDefaults = {
 		cssClass: {},
 		attributes: {},
@@ -72,11 +74,24 @@
 				itemExpanderProxy: 'ui-toolbar-item-expander-proxy',
 				itemExpanderButton: 'ui-toolbar-item-expander-button',
 				itemSeparator: 'ui-toolbar-item-separator',
+
+				hover: 'ui-state-hover',
 				active: 'ui-state-active',
 
+				wrapper: 'ui-toolbar-wrapper',
 				icon: 'ui-toolbar-icon',
 				label: 'ui-toolbar-label',
 				expander: 'ui-toolbar-expander-list'
+			},
+
+			/**
+			 * Helper and base widget classes.  These should not need changing, they are collected here for ease of
+			 * reference.
+			 */
+			cssClassAdditional: {
+				toolbar: 'ui-widget-content ui-helper-reset ui-helper-clearfix',
+				item: 'ui-state-default',
+				expander: 'ui-widget-content ui-helper-reset'
 			},
 
 			/**
@@ -92,20 +107,19 @@
 
 		/**
 		 * Widget constructor.
-		 *
-		 * TODO Progressive enhancement
 		 */
 		_create: function() {
-//			console.log('jquery.ui.toolbar', '_create()');
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', '_create()'); }
 			var self = this, o = this.options;
 			$.Widget.prototype._create.call(this);
 			this.toolbarInitialised = false;
 			this.expandersMap = {};
-			$(this.element)
-				.addClass(o.cssClass.toolbar)
+			this.$toolbar = $('<ul></ul>').appendTo(this.element);
+			this.$toolbar.addClass(o.cssClass.toolbar)
 				.addClass(o.labels ? o.cssClass.toolbarLabels : o.cssClass.toolbarNoLabels)
-				.addClass('ui-widget-content ui-helper-reset ui-helper-clearfix');
+				.addClass(o.cssClassAdditional.toolbar);
 			if ($.isArray(o.items) && o.items.length > 0) {
+				this.$toolbar.empty();
 				$.each(o.items, function(itemIndex, item) {
 					if (!$.isPlainObject(item)) {
 						item = {
@@ -136,6 +150,11 @@
 						self.selectItem($items.eq(0));
 					}
 				});
+			} else {
+				// TODO Progressive enhancement.
+				this.$toolbar.children().each(function(i, elem) {
+					var $elem = $(elem);
+				});
 			}
 			this.toolbarInitialised = true;
 			this._fixHeight();
@@ -145,7 +164,7 @@
 		 * Widget destructor.
 		 */
 		destroy: function() {
-//			console.log('jquery.ui.toolbar', 'destroy()');
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'destroy()'); }
 			var self = this;
 			this.getAllItems().each(function(i, item) {
 				self.removeItem($(item));
@@ -162,14 +181,14 @@
 		 * @param value
 		 */
 		_setOption: function(option, value) {
-//			console.log('jquery.ui.toolbar', '_setOption', option, value);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', '_setOption', option, value); }
 			var o = this.options;
 			switch (option) {
 				case 'labels':
 					if (value) {
-						$(this.element).removeClass(o.cssClass.toolbarNoLabels).addClass(o.cssClass.toolbarLabels);
+						this.$toolbar.removeClass(o.cssClass.toolbarNoLabels).addClass(o.cssClass.toolbarLabels);
 					} else {
-						$(this.element).removeClass(o.cssClass.toolbarLabels).addClass(o.cssClass.toolbarNoLabels);
+						this.$toolbar.removeClass(o.cssClass.toolbarLabels).addClass(o.cssClass.toolbarNoLabels);
 					}
 					this._fixHeight();
 					break;
@@ -192,13 +211,13 @@
 		 * @return This object, for method chaining.
 		 */
 		addButtonItem: function(id, group, properties, position, relativeTo, selected) {
-//			console.log('jquery.ui.toolbar', 'addButtonItem()', id, group, properties, position, relativeTo, selected);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'addButtonItem()', id, group, properties, position, relativeTo, selected); }
 			id = id || this._generateUniqueId('item');
 			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
 			position = position === null ? '_last' : position;
 			var isFirst = this.getItemsInGroup(group).length === 0,
 				$item = this._createButtonItem(id, group, properties, 'ui-toolbar-item-button');
-			this._addItem($item, $(this.element), position, relativeTo);
+			this._addItem($item, this.$toolbar, position, relativeTo);
 			if (selected || (isFirst && this.toolbarInitialised && properties.toggle)) {
 				this.selectItem($item);
 			}
@@ -217,11 +236,11 @@
 		 * @return This object, for method chaining.
 		 */
 		addSeparatorItem: function(id, position, relativeTo) {
-//			console.log('jquery.ui.toolbar', 'addSeparatorItem()', id, position, relativeTo);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'addSeparatorItem()', id, position, relativeTo); }
 			id = id || this._generateUniqueId('separator');
 			var $separator;
 			$separator = this._createSeparatorItem(id);
-			this._addItem($separator, $(this.element), position, relativeTo);
+			this._addItem($separator, this.$toolbar, position, relativeTo);
 			return this._fixHeight();
 		},
 
@@ -238,19 +257,19 @@
 		 * @return This object, for method chaining.
 		 */
 		addExpanderProxyItem: function(id, group, properties, position, relativeTo) {
-//			console.log('jquery.ui.toolbar', 'addExpanderProxyItem()', id, group, properties, position, relativeTo);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'addExpanderProxyItem()', id, group, properties, position, relativeTo); }
 			if (this.expandersMap[group]) {
 				throw 'Error: Cannot create duplicate proxy for group "' + group + '"';
 			}
 			id = id || this._generateUniqueId('item');
 			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
 			position = position === null ? '_last' : position;
-			var $item = this._createButtonItem(id, group, properties, 'ui-toolbar-item-expander-proxy');
-			this._addItem($item, $(this.element), position, relativeTo);
+			var $item = this._createButtonItem(id, group, properties, 'ui-toolbar-item-expander-proxy'),
+				$wrapper = this._addItem($item, this.$toolbar, position, relativeTo);
 			this.expandersMap[group] = $('<ul></ul>')
 				.addClass(this.options.cssClass.expander)
-				.addClass('ui-helper-reset')
-				.appendTo($item);
+				.addClass(this.options.cssClassAdditional.expander)
+				.appendTo($wrapper);
 			return this._fixHeight();
 		},
 
@@ -267,7 +286,7 @@
 		 * @return This object, for method chaining.
 		 */
 		addExpanderButtonItem: function(id, group, properties, position, relativeTo, selected) {
-//			console.log('jquery.ui.toolbar', 'addExpanderButtonItem()', id, group, properties, position, relativeTo, selected);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'addExpanderButtonItem()', id, group, properties, position, relativeTo, selected); }
 			id = id || this._generateUniqueId('item');
 			properties = $.extend(true, {}, itemDefaults, ($.isPlainObject(properties) ? properties : {}));
 			position = position === null ? '_last' : position;
@@ -291,7 +310,7 @@
 		 * @return This object, for method chaining.
 		 */
 		removeItem: function(itemReference) {
-//			console.log('jquery.ui.toolbar', 'removeItem()', itemReference);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'removeItem()', itemReference); }
 			this.getItem(itemReference).remove();
 			return this._fixHeight();
 		},
@@ -305,7 +324,7 @@
 		 * @return Item jQuery object as identified by the reference, or null if no such item exists.
 		 */
 		getItem: function(itemReference) {
-//			console.log('jquery.ui.toolbar', 'getItem()', itemReference);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'getItem()', itemReference); }
 			var result = null,
 				$items = this.getAllItems();
 			itemReference = itemReference || '_last';
@@ -339,8 +358,8 @@
 		 * @return jQuery object containing all items and separators in the toolbar.
 		 */
 		getAllItems: function() {
-//			console.log('jquery.ui.toolbar', 'getAllItems()');
-			return $(this.element).find('.' + this.options.cssClass.item);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'getAllItems()'); }
+			return this.$toolbar.find('.' + this.options.cssClass.item);
 		},
 
 		/**
@@ -352,14 +371,14 @@
 		 *   proxy items.
 		 */
 		getItemsInGroup: function(group) {
-//			console.log('jquery.ui.toolbar', 'getItemsInGroup()', group);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'getItemsInGroup()', group); }
 			return this.getAllItems().not('.' + this.options.cssClass.itemExpanderProxy).filter(function() {
 				return $(this).data('toolbar.item').group === group;
 			});
 		},
 
 		getProxyButtonForGroup: function(group) {
-//			console.log('jquery.ui.toolbar', 'getProxyButtonForGroup()', group);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'getProxyButtonForGroup()', group); }
 			return this.getAllItems().filter('.' + this.options.cssClass.itemExpanderProxy).filter(function() {
 				return $(this).data('toolbar.item').group === group;
 			});
@@ -374,7 +393,7 @@
 		 * @return True if the selection is successful, otherwise false.
 		 */
 		selectItem: function(itemReference) {
-//			console.log('jquery.ui.toolbar', 'selectItem()', itemReference);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'selectItem()', itemReference); }
 			var o = this.options, proceed = true, $icon, $proxyButton,
 				$item = this.getItem(itemReference),
 				properties = $item.data('toolbar.item'),
@@ -422,8 +441,8 @@
 		 * @return This object, for method chaining.
 		 */
 		hideAllExpanders: function() {
-//			console.log('jquery.ui.toolbar', 'hideAllExpanders()');
-			$(this.element).find('.' + this.options.cssClass.expander).hide();
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', 'hideAllExpanders()'); }
+			this.$toolbar.find('.' + this.options.cssClass.expander).hide();
 			return this;
 		},
 
@@ -448,7 +467,7 @@
 		 * @return jQuery object.
 		 */
 		_createButtonItem: function(id, group, properties, additionalCssClass) {
-//			console.log('jquery.ui.toolbar', '_createButtonItem()', id, group, properties);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', '_createButtonItem()', id, group, properties); }
 			var self = this, o = this.options;
 			return $('<a></a>')
 				.attr(o.attributes.item || {})
@@ -460,7 +479,7 @@
 				.addClass(o.cssClass.item || '')
 				.addClass(properties.cssClass.item || '')
 				.addClass(additionalCssClass)
-				.addClass('ui-state-default')
+				.addClass(o.cssClassAdditional.item)
 				.append(
 					$('<img/>')
 						.attr(o.attributes.icon || {})
@@ -486,10 +505,10 @@
 				}))
 				.hover(
 					function() {
-						$(this).addClass('ui-state-hover');
+						$(this).addClass(o.cssClass.hover);
 					},
 					function() {
-						$(this).removeClass('ui-state-hover');
+						$(this).removeClass(o.cssClass.hover);
 					}
 				)
 				.click(function(evt) {
@@ -513,7 +532,7 @@
 		 * @return jQuery object.
 		 */
 		_createSeparatorItem: function(id) {
-//			console.log('jquery.ui.toolbar', '_createSeparatorItem()', id);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', '_createSeparatorItem()', id); }
 			return $('<span></span>')
 				.addClass(this.options.cssClass.item)
 				.addClass(this.options.cssClass.itemSeparator)
@@ -529,37 +548,38 @@
 		 * @param position
 		 * @param relativeTo
 		 *
-		 * @return This object for method chaining.
+		 * @return Created wrapper for the item.
 		 */
 		_addItem: function($item, $target, position, relativeTo) {
-//			console.log('jquery.ui.toolbar', '_addItem()', $item, $target, position, relativeTo);
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', '_addItem()', $item, $target, position, relativeTo); }
+			var $wrapper = $('<li></li>').append($item).addClass(this.options.cssClass.wrapper);
 			switch (position) {
 				case '_first':
-					$target.prepend($item);
+					$target.prepend($wrapper);
 					break;
 				case '_last':
 				case undefined:
 				case null:
-					$target.append($item);
+					$target.append($wrapper);
 					break;
 				case '_before':
 					$target = this.getItem(relativeTo);
 					if ($target === null) {
 						throw 'Error: Cannot position relative to unkown item "' + relativeTo + '" in _addItem()';
 					}
-					$target.before($item);
+					$target.before($wrapper);
 					break;
 				case '_after':
 					$target = this.getItem(relativeTo);
 					if ($target === null) {
 						throw 'Error: Cannot position relative to unkown item "' + relativeTo + '" in _addItem()';
 					}
-					$target.after($item);
+					$target.after($wrapper);
 					break;
 				default:
 					throw 'Error: Unknown position "' + position + '" in _addItem()';
 			}
-			return this;
+			return $wrapper;
 		},
 
 		/**
@@ -567,30 +587,36 @@
 		 * corresponding to the height required by the tallest item.
 		 */
 		_fixHeight: function() {
+			// Only fix the height after the _create() constructor is done
+			if (!this.toolbarInitialised) {
+				return;
+			}
+
+			if (__DEBUG__) { console.log('jquery.ui.toolbar', '_fixHeight()'); }
 			var o = this.options,
 				maxButtonHeight = 0,
 				$items = this.getAllItems();
-			// Only fix the height after the _create() constructor is done
-			if (this.toolbarInitialised) {
-//				console.log('jquery.ui.toolbar', '_fixHeight()');
-				// We need to remove any previously set fixed height to determine the correct largest element.
-				$items.css({
-					height: 'auto'
-				});
-				// Iterate through the elements and find the one with greatest natural height.
-				$.each($items, function(itemIndex, item) {
-					var $item = $(item);
-					maxButtonHeight = Math.max(maxButtonHeight, $item.innerHeight() - parseInt($item.css('paddingTop'), 10) - parseInt($item.css('paddingBottom'), 10));
-				});
-				// Set all buttons to that height.
-				$items.css({
-					height: maxButtonHeight + 'px'
-				});
-				// Set all separators to that height.
-				$(this.element).find('.' + o.cssClass.itemSeparator).css({
-					height: maxButtonHeight + 'px'
-				});
-			}
+
+			// We need to remove any previously set fixed height to determine the correct largest element.
+			$items.css({
+				height: 'auto'
+			});
+
+			// Iterate through the elements and find the one with greatest natural height.
+			$.each($items, function(itemIndex, item) {
+				var $item = $(item);
+				maxButtonHeight = Math.max(maxButtonHeight, $item.innerHeight() - parseInt($item.css('paddingTop'), 10) - parseInt($item.css('paddingBottom'), 10));
+			});
+
+			// Set all buttons to that height.
+			$items.css({
+				height: maxButtonHeight + 'px'
+			});
+
+			// Set all separators to that height.
+			this.$toolbar.find('.' + o.cssClass.itemSeparator).css({
+				height: maxButtonHeight + 'px'
+			});
 			return this;
 		}
 	});
