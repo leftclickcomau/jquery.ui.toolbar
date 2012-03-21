@@ -119,7 +119,6 @@
 				.addClass(o.labels ? o.cssClass.toolbarLabels : o.cssClass.toolbarNoLabels)
 				.addClass(o.cssClassAdditional.toolbar);
 			if ($.isArray(o.items) && o.items.length > 0) {
-				this.$toolbar.empty();
 				$.each(o.items, function(itemIndex, item) {
 					if (!$.isPlainObject(item)) {
 						item = {
@@ -149,11 +148,6 @@
 					if ($items.filter('.' + o.cssClass.active).length === 0) {
 						self.selectItem($items.eq(0));
 					}
-				});
-			} else {
-				// TODO Progressive enhancement.
-				this.$toolbar.children().each(function(i, elem) {
-					var $elem = $(elem);
 				});
 			}
 			this.toolbarInitialised = true;
