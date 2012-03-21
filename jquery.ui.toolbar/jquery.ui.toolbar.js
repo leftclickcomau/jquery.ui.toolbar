@@ -24,13 +24,13 @@
 (function($) {
 	"use strict";
 
-	var __DEBUG__ = false;
+	var __DEBUG__ = false,
 
-	var itemDefaults = {
-		cssClass: {},
-		attributes: {},
-		icon: {}
-	};
+		itemDefaults = {
+			cssClass: {},
+			attributes: {},
+			icon: {}
+		};
 
 	/**
 	 * Configurable and programmable toolbar widget.
