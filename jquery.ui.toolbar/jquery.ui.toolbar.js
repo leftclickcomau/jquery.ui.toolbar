@@ -581,8 +581,9 @@
 		 * corresponding to the height required by the tallest item.
 		 */
 		_fixHeight: function() {
-			// Only fix the height after the _create() constructor is done
-			if (!this.toolbarInitialised) {
+			// Don't attempt to fix the height until after the _create() constructor is done and the toolbar is added
+			// to the document and made visible.
+			if (!this.toolbarInitialised || $(this).parent().length === 0 || !$(this).is(':visible')) {
 				return;
 			}
 
