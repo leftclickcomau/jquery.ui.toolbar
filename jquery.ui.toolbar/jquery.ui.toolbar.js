@@ -144,9 +144,11 @@
 					}
 				});
 				$.each(o.items, function(itemIndex, item) {
-					var $items = self.getItemsInGroup(item.group);
-					if ($items.filter('.' + o.cssClass.active).length === 0) {
-						self.selectItem($items.eq(0));
+					if (item.group) {
+						var $items = self.getItemsInGroup(item.group);
+						if ($items.filter('.' + o.cssClass.active).length === 0) {
+							self.selectItem($items.eq(0));
+						}
 					}
 				});
 			}
@@ -581,9 +583,8 @@
 		 * corresponding to the height required by the tallest item.
 		 */
 		_fixHeight: function() {
-			// Don't attempt to fix the height until after the _create() constructor is done and the toolbar is added
-			// to the document and made visible.
-			if (!this.toolbarInitialised || $(this).parent().length === 0 || !$(this).is(':visible')) {
+			// Don't attempt to fix the height until after the _create() constructor is done.
+			if (!this.toolbarInitialised) {
 				return;
 			}
 
